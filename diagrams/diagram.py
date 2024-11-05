@@ -3,8 +3,12 @@ from diagrams.aws.compute import EC2, Lambda
 from diagrams.aws.iot import IotMqtt
 from diagrams.aws.network import VPC
 from diagrams.programming.language import Python
+from diagrams.onprem.monitoring import Grafana, Prometheus
 
 with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction="LR"):
+
+    metrics = Prometheus("metric")
+    metrics << Edge(color="firebrick", style="dashed") << Grafana("monitoring")
 
     # PLC EC2 instance with MQTT broker
     with Cluster("PLC EC2 Instance"):
@@ -46,3 +50,5 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
         python_app >> Edge(label="MQTT Commands") >> actuator
 
     mqtt_broker >> Edge(label="MQTT Data") >> python_app
+    mqtt_broker << Edge(label="collect") << metrics
+    python_app << Edge(label="collect") << metrics
