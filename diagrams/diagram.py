@@ -14,11 +14,6 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
 
     simulation_state_db = Postgresql("Simulation Data")
 
-    # PLC EC2 instance with MQTT broker
-    with Cluster("PLC EC2 Instance"):
-        mqtt_broker = IotMqtt("Eclipse Mosquitto MQTT Broker")
-        python_app = Python("Python PLC")
-
     with Cluster("EC2 Environnement Physique"):
         # Sensor Dockers
         with Cluster("Capteur de mouvement d'eau"):
@@ -41,6 +36,11 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
         with Cluster("Actuators"):
             pump_actuator = Docker("Pump Actuator\n(P101)")
             valve_actuator = Docker("Valve Actuator\n(MV101)")
+
+        # PLC EC2 instance with MQTT broker
+        with Cluster("PLC Instance"):
+            mqtt_broker = IotMqtt("Eclipse Mosquitto MQTT Broker")
+            python_app = Python("Python PLC")
 
     # Connections
     sensors = [flow_sensor, level_sensor, ph_sensor, turbidity_sensor, dissolved_oxygen_sensor, conductivity_sensor, pressure_sensor, temperature_sensor]
