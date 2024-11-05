@@ -14,7 +14,7 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
 
     simulation_state_db = Postgresql("Simulation Data")
 
-    with Cluster("EC2 Environnement Physique"):
+    with Cluster("EC2 Simulation"):
         # Sensor Dockers
         with Cluster("Capteur de mouvement d'eau"):
             flow_sensor = Docker("Capteur de Flux de l'eau") # (m^3/s)
