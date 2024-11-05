@@ -12,9 +12,9 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
     metrics = Prometheus("metric")
     metrics << Edge(color="firebrick", style="dashed") << Grafana("monitoring")
 
-    simulation_state_db = Postgresql("Simulation Data")
 
     with Cluster("EC2 Simulation"):
+        simulation_state_db = Postgresql("Simulation Data")
         with Cluster("IOT Devices"):
             # Sensor Dockers
             with Cluster("Capteur de mouvement d'eau"):
