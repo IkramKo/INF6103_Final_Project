@@ -12,31 +12,53 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
     metrics = Prometheus("metric")
     metrics << Edge(color="firebrick", style="dashed") << Grafana("monitoring")
 
-
     with Cluster("EC2 Simulation"):
         simulation_state_db = Postgresql("Simulation Data")
-        with Cluster("IOT Devices"):
+        with Cluster("Capteur IOTs pour l'eau à traiter"):
             # Sensor Dockers
             with Cluster("Capteur de mouvement d'eau"):
-                flow_sensor = Docker("Capteur de Flux de l'eau") # (m^3/s)
-                level_sensor = Docker("Capteur du niveau d'eau") # (m)
+                flow_sensor_s = Docker("Capteur de Flux de l'eau") # (m^3/s)
+                level_sensor_s = Docker("Capteur du niveau d'eau") # (m)
 
             with Cluster("Capteurs de qualité d'eau"):
-                ph_sensor = Docker("Capteur de pH de l'eau") # (pH)
-                turbidity_sensor = Docker("Capteur de turbidité de l'eau") # (nephelometric turbidity units (NTU))
-                dissolved_oxygen_sensor = Docker("Capteur d'oxygène dissout") # (mg/L)
-                conductivity_sensor = Docker("Capteur de conductivité de l'eau") # siemens per meter (S/m)
+                ph_sensor_s = Docker("Capteur de pH de l'eau") # (pH)
+                turbidity_sensor_s = Docker("Capteur de turbidité de l'eau") # (nephelometric turbidity units (NTU))
+                dissolved_oxygen_sensor_s = Docker("Capteur d'oxygène dissout") # (mg/L)
+                conductivity_sensor_s = Docker("Capteur de conductivité de l'eau") # siemens per meter (S/m)
 
             with Cluster("Capteur de température"):
-                temperature_sensor = Docker("Capteur de température d'eau") # (C)
+                temperature_sensor_s = Docker("Capteur de température d'eau") # (C)
 
             with Cluster("Capteur de pression"):
-                pressure_sensor = Docker("Capteur de pression de l'eau") # psi
+                pressure_sensor_s = Docker("Capteur de pression de l'eau") # psi
 
             # Actuator Dockers
             with Cluster("Actuators"):
-                pump_actuator = Docker("Pump Actuator\n(P101)")
-                valve_actuator = Docker("Valve Actuator\n(MV101)")
+                pump_actuator_s = Docker("Pump Actuator")
+                valve_actuator_s = Docker("Valve Actuator")
+
+        with Cluster("Capteur IOTs pour l'eau traitée"):
+            # Sensor Dockers
+            with Cluster("Capteur de mouvement d'eau"):
+                flow_sensor_f = Docker("Capteur de Flux de l'eau") # (m^3/s)
+                level_sensor_f = Docker("Capteur du niveau d'eau") # (m)
+
+            with Cluster("Capteurs de qualité d'eau"):
+                ph_sensor_f = Docker("Capteur de pH de l'eau") # (pH)
+                turbidity_sensor_f = Docker("Capteur de turbidité de l'eau") # (nephelometric turbidity units (NTU))
+                dissolved_oxygen_sensor_f = Docker("Capteur d'oxygène dissout") # (mg/L)
+                conductivity_sensor_f = Docker("Capteur de conductivité de l'eau") # siemens per meter (S/m)
+
+            with Cluster("Capteur de température"):
+                temperature_sensor_f = Docker("Capteur de température d'eau") # (C)
+
+            with Cluster("Capteur de pression"):
+                pressure_sensor_f = Docker("Capteur de pression de l'eau") # psi
+
+            # Actuator Dockers
+            with Cluster("Actuators"):
+                pump_actuator_f = Docker("Pump Actuator")
+                valve_actuator_f = Docker("Valve Actuator")
 
         # PLC EC2 instance with MQTT broker
         with Cluster("PLC Instance"):
@@ -44,8 +66,27 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
             python_app = Python("Python PLC")
 
     # Connections
-    sensors = [flow_sensor, level_sensor, ph_sensor, turbidity_sensor, dissolved_oxygen_sensor, conductivity_sensor, pressure_sensor, temperature_sensor]
-    actuators = [pump_actuator, valve_actuator]
+    sensors = [
+        # Sensors for water to be treated
+        flow_sensor_s, 
+        level_sensor_s, 
+        ph_sensor_s, 
+        turbidity_sensor_s, 
+        dissolved_oxygen_sensor_s, 
+        conductivity_sensor_s, 
+        pressure_sensor_s, 
+        temperature_sensor_s,
+        # Sensors for water after treatment
+        flow_sensor_f,
+        level_sensor_f,
+        ph_sensor_f,
+        turbidity_sensor_f,
+        dissolved_oxygen_sensor_f,
+        conductivity_sensor_f,
+        temperature_sensor_f,
+        pressure_sensor_f
+    ]
+    actuators = [pump_actuator_s, valve_actuator_s, pump_actuator_f, valve_actuator_f]
 
     # Sensor to MQTT Broker (EC2)
     for sensor in sensors:
