@@ -15,27 +15,28 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
     simulation_state_db = Postgresql("Simulation Data")
 
     with Cluster("EC2 Simulation"):
-        # Sensor Dockers
-        with Cluster("Capteur de mouvement d'eau"):
-            flow_sensor = Docker("Capteur de Flux de l'eau") # (m^3/s)
-            level_sensor = Docker("Capteur du niveau d'eau") # (m)
+        with Cluster("IOT Devices"):
+            # Sensor Dockers
+            with Cluster("Capteur de mouvement d'eau"):
+                flow_sensor = Docker("Capteur de Flux de l'eau") # (m^3/s)
+                level_sensor = Docker("Capteur du niveau d'eau") # (m)
 
-        with Cluster("Capteurs de qualité d'eau"):
-            ph_sensor = Docker("Capteur de pH de l'eau") # (pH)
-            turbidity_sensor = Docker("Capteur de turbidité de l'eau") # (nephelometric turbidity units (NTU))
-            dissolved_oxygen_sensor = Docker("Capteur d'oxygène dissout") # (mg/L)
-            conductivity_sensor = Docker("Capteur de conductivité de l'eau") # siemens per meter (S/m)
+            with Cluster("Capteurs de qualité d'eau"):
+                ph_sensor = Docker("Capteur de pH de l'eau") # (pH)
+                turbidity_sensor = Docker("Capteur de turbidité de l'eau") # (nephelometric turbidity units (NTU))
+                dissolved_oxygen_sensor = Docker("Capteur d'oxygène dissout") # (mg/L)
+                conductivity_sensor = Docker("Capteur de conductivité de l'eau") # siemens per meter (S/m)
 
-        with Cluster("Capteur de température"):
-            temperature_sensor = Docker("Capteur de température d'eau") # (C)
+            with Cluster("Capteur de température"):
+                temperature_sensor = Docker("Capteur de température d'eau") # (C)
 
-        with Cluster("Capteur de pression"):
-            pressure_sensor = Docker("Capteur de pression de l'eau") # psi
+            with Cluster("Capteur de pression"):
+                pressure_sensor = Docker("Capteur de pression de l'eau") # psi
 
-        # Actuator Dockers
-        with Cluster("Actuators"):
-            pump_actuator = Docker("Pump Actuator\n(P101)")
-            valve_actuator = Docker("Valve Actuator\n(MV101)")
+            # Actuator Dockers
+            with Cluster("Actuators"):
+                pump_actuator = Docker("Pump Actuator\n(P101)")
+                valve_actuator = Docker("Valve Actuator\n(MV101)")
 
         # PLC EC2 instance with MQTT broker
         with Cluster("PLC Instance"):
@@ -54,7 +55,7 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
     # MQTT Broker to Actuators via Python Application
     for actuator in actuators:
         python_app >> Edge(label="MQTT Commands") >> actuator
-        actuator >> Edge(label="modifies") >> simulation_state_db
+        simulation_state_db << Edge(label="modifies") << actuator
 
     mqtt_broker >> Edge(label="MQTT Data") >> python_app
     mqtt_broker << Edge(label="collect") << metrics
