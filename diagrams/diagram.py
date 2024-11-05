@@ -5,11 +5,14 @@ from diagrams.aws.iot import IotMqtt
 from diagrams.aws.network import VPC
 from diagrams.programming.language import Python
 from diagrams.onprem.monitoring import Grafana, Prometheus
+from diagrams.onprem.database import Postgresql
 
 with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction="LR"):
 
     metrics = Prometheus("metric")
     metrics << Edge(color="firebrick", style="dashed") << Grafana("monitoring")
+
+    simulation_state_db = Postgresql("Simulation Data")
 
     # PLC EC2 instance with MQTT broker
     with Cluster("PLC EC2 Instance"):
@@ -46,10 +49,12 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
     # Sensor to MQTT Broker (EC2)
     for sensor in sensors:
         sensor >> Edge(label="MQTT Data") >> mqtt_broker
+        simulation_state_db << Edge(label="reads") << sensor
 
     # MQTT Broker to Actuators via Python Application
     for actuator in actuators:
         python_app >> Edge(label="MQTT Commands") >> actuator
+        actuator >> Edge(label="modifies") >> simulation_state_db
 
     mqtt_broker >> Edge(label="MQTT Data") >> python_app
     mqtt_broker << Edge(label="collect") << metrics
