@@ -1,0 +1,5 @@
+diagrams==0.24.0
+graphviz==0.20.3
+Jinja2==3.1.4
+MarkupSafe==3.0.2
+typed-ast==1.5.5
