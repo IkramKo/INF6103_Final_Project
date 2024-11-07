@@ -17,14 +17,14 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
         # Sensors and Actuators Untreated Water -> Treatment Tank
         with Cluster("Entrée dans la zone de traitement"):
             flow_sensor_1 = Docker("Capteur de débit d'eau")
-            pump_actuator_1 = Docker("Pompe (Actuateur)")
-            valve_actuator_1 = Docker("Valve (Actuateur)")
+            pump_actuator_1 = Docker("Pompe (Actionneur)")
+            valve_actuator_1 = Docker("Valve (Actionneur)")
 
         # Sensors and Actuators Treated Tank -> Treatment Tank
         with Cluster("Boucle de re-traitement"):
             flow_sensor_2 = Docker("Capteur de débit d'eau")
-            pump_actuator_2 = Docker("Pompe (Actuateur)")
-            valve_actuator_2 = Docker("Valve (Actuateur)")
+            pump_actuator_2 = Docker("Pompe (Actionneur)")
+            valve_actuator_2 = Docker("Valve (Actionneur)")
 
         # Sensors for Treatment Tank
         with Cluster("Zone de traitement"):
@@ -38,8 +38,8 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
         # Sensors for Treatment Tank -> Treated Tank
         with Cluster("Sortie de la zone de traitement"):
             flow_sensor_3 = Docker("Capteur de débit d'eau")
-            pump_actuator_3 = Docker("Pompe (Actuateur)")
-            valve_actuator_3 = Docker("Valve (Actuateur)")
+            pump_actuator_3 = Docker("Pompe (Actionneur)")
+            valve_actuator_3 = Docker("Valve (Actionneur)")
 
         # Sensors for Treated Tank
         with Cluster("Zone traitée"):
@@ -53,8 +53,8 @@ with Diagram("IoT-Driven Water Treatment Plant with PLC", show=False, direction=
         # Sensors for Leaving Treated Tank
         with Cluster("Sortie de la zone traitée"):
             flow_sensor_4 = Docker("Capteur de débit d'eau")
-            pump_actuator_4 = Docker("Pompe (Actuateur)")
-            valve_actuator_4 = Docker("Valve (Actuateur)")
+            pump_actuator_4 = Docker("Pompe (Actionneur)")
+            valve_actuator_4 = Docker("Valve (Actionneur)")
 
         # PLC EC2 instance with MQTT broker
         with Cluster("PLC Instance"):
