@@ -1,4 +1,3 @@
-version: '3'
 services:
   postgres:
     image: postgres:latest
@@ -10,9 +9,23 @@ services:
       - ./sql:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
+    networks:
+      - my_network
 
   mosquitto:
     image: eclipse-mosquitto:latest
     ports:
-      - "1883:1883"
-      - "9001:9001"
+      - "1883:1883"    # MQTT protocol port
+      - "9001:9001"    # WebSocket protocol port
+    volumes:
+      - ./config:/mosquitto/config   # Configuration files
+      - ./data:/mosquitto/data       # Persistence data
+      - ./log:/mosquitto/log         # Log files
+    stdin_open: true 
+    tty: true
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
