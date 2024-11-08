@@ -2,12 +2,12 @@ import time
 import paho.mqtt.client as mqtt
 
 # MQTT broker settings
-broker_address = "172.17.0.1"  # or "mosquitto" if inside a Docker network
+broker_address = "localhost"  # or "mosquitto" if inside a Docker network
 port = 1883
 topic = "test/topic"
 # Credentials
-username = "user1"
-password = "pwd1"
+username = "T_Temperature_TRTM"
+password = "T_Temperature_TRTM_psswd"
 
 # Connection status flag
 is_connected = False

@@ -12,8 +12,6 @@ class DbService:
         "user": "myuser",
         "password": "mypassword"
     }
-    _cursor: Any # Forgive me father for I have sinned
-    _connection: Any
 
     def __init__(self):
         try:
@@ -27,10 +25,10 @@ class DbService:
         except Exception as e:
             print(f"Error connecting to the database: {e}")
 
-    def query(self):
+    def query(self, command: str):
         try:
-            self._cursor.execute("SELECT sensor_name, psswd FROM INF6103.Sensor;")
-            tables = self._cursor.fetchall()
+            self._cursor.execute(command)
+            return self._cursor.fetchall()
         except Exception as e:
             print(f"Error seeding the database: {e}")
 
@@ -38,9 +36,3 @@ class DbService:
         self._cursor.close()
         self._connection.close()
         print("Database connection closed.")
-
-        
-
-
-db_service = DbService()
-db_service.close_connection()
