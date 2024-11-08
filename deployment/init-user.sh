@@ -10,7 +10,7 @@ PGDATABASE="mydb"
 MOSQUITTO_SERVICE="mosquitto"
 
 # SQL query to fetch sensor_name and psswd
-SQL_QUERY="SELECT sensor_name, psswd FROM INF6103.Sensor;"
+SQL_QUERY="SELECT sensor_name AS name, psswd FROM INF6103.Sensor UNION ALL SELECT actuator_name as name, psswd FROM INF6103.Actuator;"
 
 # Get the list of sensor_name and password pairs from PostgreSQL
 sensor_data=$(PGPASSWORD=$PGPASSWORD psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -t -A -F"," -c "$SQL_QUERY")

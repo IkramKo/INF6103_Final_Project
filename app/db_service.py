@@ -25,12 +25,25 @@ class DbService:
         except Exception as e:
             print(f"Error connecting to the database: {e}")
 
-    def query(self, command: str):
+    def command(self, command: str, params=None, fetch=True, modify=False):
+        print("Query:", command)
+        print("Params:", params)
         try:
-            self._cursor.execute(command)
-            return self._cursor.fetchall()
+            self._cursor.execute(command, params) # Use parameterized queries
+
+            if modify:
+                self._connection.commit()  # Commit changes for INSERT, UPDATE, DELETE
+                return None  # Or return a success message
+
+            if fetch:
+                return self._cursor.fetchall()
+            else: 
+                return None # For queries that don't return results (e.g., CREATE TABLE)
+
         except Exception as e:
-            print(f"Error seeding the database: {e}")
+            self._connection.rollback() # Rollback on error for modify operations
+            print(f"Database query error: {e}")
+            return None # Return None to indicate an error
 
     def close_connection(self):
         self._cursor.close()
