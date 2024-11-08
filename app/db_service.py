@@ -20,19 +20,25 @@ class DbService:
             self._connection = psycopg2.connect(**self.db_params)
             self._cursor = self._connection.cursor()
             
-            # Testing connection by fetching the PostgreSQL version
+            # Establish and test connection to db
             self._cursor.execute("SELECT version();")
             db_version = self._cursor.fetchone()
             print(f"Connected to PostgreSQL database. Version: {db_version}")
         except Exception as e:
             print(f"Error connecting to the database: {e}")
 
-    # Connect to PostgreSQL
+    def query(self):
+        try:
+            self._cursor.execute("SELECT sensor_name, psswd FROM INF6103.Sensor;")
+            tables = self._cursor.fetchall()
+        except Exception as e:
+            print(f"Error seeding the database: {e}")
+
     def close_connection(self):
-        # Closing the cursor and connection
         self._cursor.close()
         self._connection.close()
         print("Database connection closed.")
+
         
 
 
