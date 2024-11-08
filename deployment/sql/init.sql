@@ -7,7 +7,7 @@ CREATE SCHEMA INF6103;
 CREATE TABLE IF NOT EXISTS INF6103.IdealValue (
     id SERIAL,
     sensor_name TEXT NOT NULL,
-    ideal_value SMALLINT NOT NULL,
+    ideal_value FLOAT NOT NULL,
     unit TEXT NOT NULL,
     PRIMARY KEY (id, sensor_name)
 );
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS INF6103.IdealValue (
 CREATE TABLE IF NOT EXISTS INF6103.Sensor (
     id SERIAL,
     sensor_name TEXT,
-    current_reading SMALLINT NOT NULL,
+    current_reading FLOAT NOT NULL,
     unit TEXT NOT NULL, -- will be retrieved from IdealValue table
     PRIMARY KEY (id, sensor_name), -- composite key, same keys as IdealValue that way we can do 1:1 comparison with that table
     FOREIGN KEY(id, sensor_name) REFERENCES INF6103.IdealValue(id, sensor_name) ON DELETE CASCADE ON UPDATE CASCADE
@@ -25,15 +25,30 @@ CREATE TABLE IF NOT EXISTS INF6103.Sensor (
 CREATE TABLE IF NOT EXISTS INF6103.Actuator (
     id SERIAL,
     actuator_name TEXT,
-    current_value SMALLINT NOT NULL, -- is essentially the position for valves (ex: 10% open) and 'débit'' for pumps (ex: 5 cubic meters per second).
+    current_value FLOAT NOT NULL, -- is essentially the position for valves (ex: 10% open) and 'débit'' for pumps (ex: 5 cubic meters per second).
     unit TEXT NOT NULL, -- either % or volume/second
     PRIMARY KEY (id, actuator_name)
 );
 
 ------------------- Populating IdealValue Table -------------------
+-- C_ = Capteur
+-- TRTM = Zone de traitement
 INSERT INTO INF6103.IdealValue(sensor_name, ideal_value, unit) 
-VALUES  ('Température', 2, '°C'),
-        ('Débit', 5, 'L/s'); 
+VALUES  ('C_Temperature_TRTM', 15, '°C'),
+        ('C_Level_TRTM', 450, 'L') -- can be measured with volume or height units; going for volume, same as for treated water
+        ('C_Conductivity_TRTM', 5000, 'S/m'), -- siemens per meter; value from https://atlas-scientific.com/blog/water-quality-parameters/
+        ('C_Dissolved_Oxygen_TRTM', 4, 'mg/L'),
+        ('C_Turbidity_TRTM', 9, 'NTU'), -- nephelometric turbidity units; value from https://atlas-scientific.com/blog/water-quality-parameters/
+        ('C_PH_TRTM', 5, 'pH'); -- we're assuming this waste water is acidic
+
+-- TRT = Zone traitée
+INSERT INTO INF6103.IdealValue(sensor_name, ideal_value, unit) 
+VALUES  ('C_Temperature_TRT', 25, '°C'), -- should be between 20 and 40 degrees, so 25 should be fine
+        ('C_Level_TRT', 450, 'L')
+        ('C_Conductivity_TRT', 200, 'S/m'),
+        ('C_Dissolved_Oxygen_TRT', 7, 'mg/'),
+        ('C_Turbidity_TRT', 0.5, 'NTU'),
+        ('C_PH_TRT', 7.6, 'pH');
 
 ------------------- Populating Sensor Table -------------------
 -- Initially, this will essentially copy the IdealValue table entirely, but the current reading will eventually be modified during the simulation.
