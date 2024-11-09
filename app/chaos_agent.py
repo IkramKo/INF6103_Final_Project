@@ -170,8 +170,6 @@ class Chaos_Agent:
         Fill treated tank
         Simultaneously empty untreated tank
         once on empty and the other full, close pipe
-        init treated tank sensors
-        wait 5 seconds to simulate quality check
         """
         current_treated_tank_lvl, target_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading, ideal_value", SensorNames.TREATED_TANK_LEVEL.value)
         treated_tank_increase_rate = (target_tank_lvl - current_treated_tank_lvl)/self.simulation_time_loop_in_seconds
@@ -193,6 +191,16 @@ class Chaos_Agent:
         # close untreated output pipe
         self.manage_pipe(PipeType.UNTREATED_OUTPUT, 0, 0)
         print("Treated tank filled to target level. Beginning quality check.")
+
+    def quality_check_treated_tank(self):
+        """
+        init treated tank sensors (to ideal values for now but this will fuck up the retreatment... to ponder)
+        wait 5 seconds to simulate quality check
+        """
+        self.init_tank_sensors_to_their_ideal_values(TankType.TREATED)
+        time.sleep(1)
+        print("Quality check complete. Transsferring treated water to reservoir.")
+
 
 
 
