@@ -26,8 +26,8 @@ class DbService:
             print(f"Error connecting to the database: {e}")
 
     def command(self, command: str, params=None, fetch=True, modify=False):
-        print("Query:", command)
-        print("Params:", params)
+        # print("Query:", command)
+        # print("Params:", params)
         try:
             self._cursor.execute(command, params) # Use parameterized queries
 
@@ -52,8 +52,19 @@ class DbService:
     def get_single_sensor_attributes(self, attributes: str, sensor_name: str):
         return self.command(f"SELECT {attributes} FROM INF6103.Sensor WHERE sensor_name=%s", params=(sensor_name,))[0]
 
-    def get_single_actuator_attributes(self, attributes: str, sensor_name: str):
-        return self.command(f"SELECT {attributes} FROM INF6103.Actuator WHERE actuator_name=%s", params=(sensor_name,))[0]
+    def get_single_actuator_attributes(self, attributes: str, actuator_name: str):
+        return self.command(f"SELECT {attributes} FROM INF6103.Actuator WHERE actuator_name=%s", params=(actuator_name,))[0]
+
+    def update_single_sensor_current_reading(self, value: float, sensor_name: str):
+        return self.command(f"UPDATE INF6103.Sensor SET current_reading = %s WHERE sensor_name = %s", params=(value, sensor_name), modify=True)
+    
+    def update_single_actuator_current_value(self, value: float, actuator_name: str):
+        return self.command(f"UPDATE INF6103.Actuator SET current_value = %s WHERE actuator_name = %s", params=(value, actuator_name), modify=True)
+
+    # Reset simulation by setting all current readings of sensors and current values of actuators to 0
+    def reset_all_current_values(self):
+        self.command(f"UPDATE INF6103.Sensor SET current_reading = 0;", modify=True)
+        self.command(f"UPDATE INF6103.Actuator SET current_value = 0;", modify=True)
 
     def close_connection(self):
         self._cursor.close()
