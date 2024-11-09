@@ -52,7 +52,7 @@ INSERT INTO INF6103.Sensor(sensor_name, current_reading, ideal_value, unit, pssw
 VALUES  ('P_Debit_TRT_Out', 0, 0, 'L/s', 'P_Debit_TRT_Out_psswd'),
         ('P_Debit_TRTM_Out', 0, 0, 'L/s', 'P_Debit_TRTM_Out_psswd'), -- Is also input of treated tank
         ('P_Debit_RTRTM', 0, 0, 'L/s', 'P_Debit_RTRTM_psswd'),
-        ('P_Debit_TRTM_In', 0, 0, 'L/s', 'P_Debit_TRT_In_psswd');
+        ('P_Debit_TRTM_In', 45, 0, 'L/s', 'P_Debit_TRT_In_psswd');
 
 ------------------- Populating Actuators Table -------------------
 -- Valves
@@ -60,11 +60,11 @@ INSERT INTO INF6103.Actuator(actuator_name, current_value, unit, psswd)
 VALUES  ('P_Valve_TRT_Out', 0, '%', 'P_Valve_TRT_Out_psswd'), -- Opened at X%
         ('P_Valve_TRTM_Out', 0, '%', 'P_Valve_TRTM_Out_psswd'),
         ('P_Valve_RTRTM', 0, '%', 'P_Valve_RTRTM_psswd'),
-        ('P_Valve_TRTM_In', 0, '%', 'P_Valve_TRT_In_psswd');
+        ('P_Valve_TRTM_In', 100, '%', 'P_Valve_TRT_In_psswd');
 
 -- Pumps
 INSERT INTO INF6103.Actuator(actuator_name, current_value, unit, psswd) 
 VALUES  ('P_Pump_TRT_Out', 0, 'L/s', 'P_Pump_TRT_Out_psswd'), -- Also debit
         ('P_Pump_TRTM_Out', 0, 'L/s', 'P_Pump_TRTM_Out_psswd'),
         ('P_Pump_RTRTM', 0, 'L/s', 'P_Pump_RTRTM_psswd'),
-        ('P_Pump_TRTM_In', 0, 'L/s', 'P_Pump_TRT_In_psswd');
+        ('P_Pump_TRTM_In', 45, 'L/s', 'P_Pump_TRT_In_psswd');

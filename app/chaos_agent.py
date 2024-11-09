@@ -30,5 +30,22 @@ class Chaos_Agent:
 
     def __init__(self):
         self.db_service = DbService()
+    
+    def read_sensor_current_value(self, sensor_name: str):
+        return self.db_service.command(f"SELECT current_reading FROM INF6103.Sensor WHERE sensor_name=%s", params=(sensor_name,))[0][0]
+
+    def read_actuator_current_value(self, sensor_name: str):
+        return self.db_service.command(f"SELECT current_reading FROM INF6103.Actuator WHERE sensor_name=%s", params=(sensor_name,))[0][0]
+
+    def fill_trtm_tank(self):
+        """
+            - increase trtm level sensor by 45 L/s
+            - trtm input pump already set to 45 L/s in init sql
+            - trtm input valve already open 100% in init sql
+        """
+        print(self.read_sensor_current_value("T_Level_TRTM"))
+
+chaos_agent = Chaos_Agent()
+chaos_agent.fill_trtm_tank()
 
     
