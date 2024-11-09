@@ -95,11 +95,12 @@ class Chaos_Agent:
         while current_tank_lvl < target_tank_lvl:
             current_tank_lvl = round(current_tank_lvl + increase_rate, 2)
             self.db_service.update_single_sensor_current_reading(current_tank_lvl, SensorNames.UNTREATED_TANK_LEVEL.value)
+            print("Current untreated tank lvl (filling up phase): ", current_tank_lvl)
             time.sleep(1)
 
         # close untreated input pipe
         self.manage_pipe(PipeType.UNTREATED_INPUT, 0, 0)
-        print("Tank filled to target level. Beginning treatment.")
+        print("Untreated tank filled to target level. Beginning treatment.")
     
     def init_tank_sensors_to_their_ideal_values(self, tank_type: str):
         """
@@ -140,6 +141,7 @@ class Chaos_Agent:
                 current_reading = round(curr_val + increase_rate, 2)
                 sensor_target_vals[sensor_name] = (current_reading, id_val, increase_rate)
                 self.db_service.update_single_sensor_current_reading(current_reading, sensor_name)
+            print(f"Untreated tank {sensor_name} sensor value (treatment phase): ", self.db_service.get_single_sensor_attributes("current_reading", sensor_name))
 
     def treat_water(self):
         """
@@ -159,14 +161,44 @@ class Chaos_Agent:
             # all(flag == 0 for (_, _, flag) in items) -- thank you stackoverflow i owe you my life
             all_sensors_at_treated_ideal_val = not all(curr_val >= id_val for curr_val, id_val, _ in sensor_target_vals.values())
             time.sleep(1)
+
         print("Water treated. Transfering to quality check tank.")
 
     def fill_treated_tank(self):
-        pass
+        """
+        Open untreated tank output pipe
+        Fill treated tank
+        Simultaneously empty untreated tank
+        once on empty and the other full, close pipe
+        init treated tank sensors
+        wait 5 seconds to simulate quality check
+        """
+        current_treated_tank_lvl, target_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading, ideal_value", SensorNames.TREATED_TANK_LEVEL.value)
+        treated_tank_increase_rate = (target_tank_lvl - current_treated_tank_lvl)/self.simulation_time_loop_in_seconds
+        current_untreated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
+
+        # open untreated tank OUTPUT pipe
+        self.manage_pipe(PipeType.UNTREATED_OUTPUT, treated_tank_increase_rate, 100)
+       
+        while current_treated_tank_lvl < target_tank_lvl and current_untreated_tank_lvl > 0:
+            current_treated_tank_lvl = round(current_treated_tank_lvl + treated_tank_increase_rate, 2)
+            current_untreated_tank_lvl = round(current_untreated_tank_lvl - treated_tank_increase_rate, 2) # empty untreated tank at same rate as treated is filling up
+            print("Current treated tank lvl (post treatment phase): ", current_treated_tank_lvl, "Current untreated tank lvl (post treatment phase): ", current_untreated_tank_lvl)
+
+            self.db_service.update_single_sensor_current_reading(current_treated_tank_lvl, SensorNames.TREATED_TANK_LEVEL.value)
+            self.db_service.update_single_sensor_current_reading(current_untreated_tank_lvl, SensorNames.UNTREATED_TANK_LEVEL.value)
+
+            time.sleep(1)
+
+        # close untreated output pipe
+        self.manage_pipe(PipeType.UNTREATED_OUTPUT, 0, 0)
+        print("Treated tank filled to target level. Beginning quality check.")
+
+
 
 chaos_agent = Chaos_Agent()
-#chaos_agent.fill_untreated_tank()
-# chaos_agent.init_tank_sensors_to_their_ideal_values(TankType.UNTREATED)
+chaos_agent.fill_untreated_tank()
 chaos_agent.treat_water()
+chaos_agent.fill_treated_tank()
 
     
