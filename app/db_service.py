@@ -44,6 +44,16 @@ class DbService:
             self._connection.rollback() # Rollback on error for modify operations
             print(f"Database query error: {e}")
             return None # Return None to indicate an error
+        
+    # example use to print the current reading of specific sensor: 
+        # print(self.db_service.get_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0])
+    # example use to print current reading, unit and id of specific sensor:
+        # print(self.db_service.get_single_sensor_attributes("current_reading, unit, id", SensorNames.UNTREATED_TANK_LEVEL.value))
+    def get_single_sensor_attributes(self, attributes: str, sensor_name: str):
+        return self.command(f"SELECT {attributes} FROM INF6103.Sensor WHERE sensor_name=%s", params=(sensor_name,))[0]
+
+    def get_single_actuator_attributes(self, attributes: str, sensor_name: str):
+        return self.command(f"SELECT {attributes} FROM INF6103.Actuator WHERE actuator_name=%s", params=(sensor_name,))[0]
 
     def close_connection(self):
         self._cursor.close()
