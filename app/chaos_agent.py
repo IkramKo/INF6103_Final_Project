@@ -60,7 +60,7 @@ class Chaos_Agent:
             SensorNames.TREATED_TANK_PH.value
         ]
 
-    def manage_pipe(self, pipe_type:str, pump_debit: float, valve_position: float):
+    def manage_pipe(self, pipe_type: str, pump_debit: float, valve_position: float):
         if pipe_type == PipeType.UNTREATED_INPUT:
             self.db_service.update_single_actuator_current_value(valve_position, ActuatorNames.UNTREATED_TANK_INPUT_PIPE_VALVE.value)
             self.db_service.update_single_actuator_current_value(pump_debit, ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value)
@@ -99,7 +99,7 @@ class Chaos_Agent:
 
         # close untreated input pipe
         self.manage_pipe(PipeType.UNTREATED_INPUT, 0, 0)
-        print("Tank filled to target level.")
+        print("Tank filled to target level. Beginning treatment.")
     
     def init_tank_sensors_to_their_ideal_values(self, tank_type: str):
         """
@@ -112,6 +112,34 @@ class Chaos_Agent:
             str_tank_sensor_names = ', '.join(f"'{sensor}'" for sensor in self.treated_tank_sensor_names)
         self.db_service.command(f"UPDATE INF6103.Sensor SET current_reading = ideal_value WHERE sensor_name IN ({str_tank_sensor_names})", modify=True)
 
+    def _set_untreated_tank_sensor_data(self):
+        """
+        Retrieve current and ideal values and store in dict to make following manips easier
+        Calculate increase rate of each sensor
+        """
+        sensor_target_vals = {}
+
+        for untreated_sensor_name in self.untreated_tank_sensor_names:
+            # retrieves type (oxygen, turbidity, etc)
+            untreated_sensor_type = untreated_sensor_name.split('_')[-2]
+            equivalent_treated_sensor = [sensor_type for sensor_type in self.treated_tank_sensor_names if untreated_sensor_type in sensor_type][0]
+
+            # too tired to do a proper try catch so instead, SensorNames(equivalent_treated_sensor) is done to make sure element exists, if not, error raised automatically
+            curr_val = self.db_service.get_single_sensor_attributes("current_reading", SensorNames(equivalent_treated_sensor).value)[0]
+            id_val = self.db_service.get_single_sensor_attributes("ideal_value", SensorNames(equivalent_treated_sensor).value)[0]
+            increase_rate = (id_val - curr_val)/self.simulation_time_loop_in_seconds
+            sensor_target_vals[untreated_sensor_name] = (curr_val, id_val, increase_rate)
+
+        return sensor_target_vals
+    
+    def _increment_untreated_tank_sensor_values(self, sensor_target_vals: dict):
+        for sensor_name, vals in sensor_target_vals.items():
+            curr_val, id_val, increase_rate = vals
+            # dont increment sensors that have already reached their ideal value
+            if curr_val < id_val:
+                current_reading = round(curr_val + increase_rate, 2)
+                sensor_target_vals[sensor_name] = (current_reading, id_val, increase_rate)
+                self.db_service.update_single_sensor_current_reading(current_reading, sensor_name)
 
     def treat_water(self):
         """
@@ -120,16 +148,25 @@ class Chaos_Agent:
         Make all sensors of untreated tank (except lvl) vary towards their ideal TREATED value
         """
         self.init_tank_sensors_to_their_ideal_values(TankType.UNTREATED)
+        sensor_target_vals = self._set_untreated_tank_sensor_data()
 
+        all_sensors_at_treated_ideal_val = True
+        while all_sensors_at_treated_ideal_val:
+            # increment
+            self._increment_untreated_tank_sensor_values(sensor_target_vals)
 
+            # check if all have reached id val
+            # all(flag == 0 for (_, _, flag) in items) -- thank you stackoverflow i owe you my life
+            all_sensors_at_treated_ideal_val = not all(curr_val >= id_val for curr_val, id_val, _ in sensor_target_vals.values())
+            time.sleep(1)
+        print("Water treated. Transfering to quality check tank.")
 
-        
-
-
-
+    def fill_treated_tank(self):
+        pass
 
 chaos_agent = Chaos_Agent()
 #chaos_agent.fill_untreated_tank()
 # chaos_agent.init_tank_sensors_to_their_ideal_values(TankType.UNTREATED)
+chaos_agent.treat_water()
 
     
