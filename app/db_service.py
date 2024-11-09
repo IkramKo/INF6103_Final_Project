@@ -45,10 +45,8 @@ class DbService:
             print(f"Database query error: {e}")
             return None # Return None to indicate an error
         
-    # example use to print the current reading of specific sensor: 
-        # print(self.db_service.get_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0])
-    # example use to print current reading, unit and id of specific sensor:
-        # print(self.db_service.get_single_sensor_attributes("current_reading, unit, id", SensorNames.UNTREATED_TANK_LEVEL.value))
+    # region OPS_ON_SINGLE_SENSOR_ACTUATOR
+    # See chaos_agent.py for examples on how to use
     def get_single_sensor_attributes(self, attributes: str, sensor_name: str):
         return self.command(f"SELECT {attributes} FROM INF6103.Sensor WHERE sensor_name=%s", params=(sensor_name,))[0]
 
@@ -60,7 +58,9 @@ class DbService:
     
     def update_single_actuator_current_value(self, value: float, actuator_name: str):
         return self.command(f"UPDATE INF6103.Actuator SET current_value = %s WHERE actuator_name = %s", params=(value, actuator_name), modify=True)
+    # endregion
 
+    
     # Reset simulation by setting all current readings of sensors and current values of actuators to 0
     def reset_all_current_values(self):
         self.command(f"UPDATE INF6103.Sensor SET current_reading = 0;", modify=True)
