@@ -1,4 +1,4 @@
-from model.iot import Iot
+from app.model.iot import Iot
 import time
 
 class Actuator(Iot):
@@ -34,6 +34,16 @@ class Actuator(Iot):
     
     def on_message(self, client, userdata, message):
         print(f"Received message: {message.payload.decode()} on topic {message.topic}")
-        
+        def update_actuator_value(self, new_value: float):
+            try:
+                # SQL query with parameterization
+                query = "UPDATE INF6103.Actuator SET current_value = %s WHERE actuator_name = %s"
+                params = (new_value, self.name)  # Correct tuple for parameters
 
+                # Execute the query and commit changes
+                self.db_service.command(query, params=params, modify=True)
+                print(f"Actuator {self.name} updated to {new_value}")
 
+            except Exception as e:
+                print(f"Error updating actuator: {e}")
+        update_actuator_value(self, float(message.payload.decode()))

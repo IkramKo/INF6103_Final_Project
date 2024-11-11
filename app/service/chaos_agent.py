@@ -23,18 +23,10 @@ from db_service import DbService
 ############################################################################################################################
 from enums.sensor_names import SensorNames
 from enums.actuator_names import ActuatorNames
+from enums.pipe_type import PipeType
+from enums.tank_type import TankType
 from enum import Enum
 import time
-
-class TankType(Enum):
-    TREATED = 'treated'
-    UNTREATED = 'untreated'
-
-class PipeType(Enum):
-    TREATED_OUTPUT = 'treated_output'
-    UNTREATED_INPUT = 'untreated_input'
-    UNTREATED_OUTPUT = 'untreated_output'
-    RETREATEMENT = 'retreatment'
 
 class Chaos_Agent:
     """

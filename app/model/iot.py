@@ -1,4 +1,4 @@
-from db_service import DbService
+from app.service.db_service import DbService
 import paho.mqtt.client as mqtt
 
 class Iot():

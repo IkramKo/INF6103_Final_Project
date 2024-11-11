@@ -48,6 +48,9 @@ for pair_str in "${pairs[@]}"; do
     sudo docker compose exec -T "$MOSQUITTO_SERVICE" mosquitto_passwd -b /mosquitto/config/pwfile "$usr" "$passwd"
 done
 
+# Adding the PLC user
+sudo docker compose exec -T "$MOSQUITTO_SERVICE" mosquitto_passwd -b /mosquitto/config/pwfile "plc_usr" "plc_passwd"
+
 # Optionally restart Mosquitto to ensure the changes take effect
 echo "Restarting Mosquitto broker..."
 sudo docker compose restart "$MOSQUITTO_SERVICE"
