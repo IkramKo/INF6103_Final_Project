@@ -1,4 +1,3 @@
-from db_service import DbService
 ######################################################## SIMULATION ########################################################
 """
     1. To be treated tank fills up
@@ -21,11 +20,11 @@ from db_service import DbService
     7. Restart loop
 """
 ############################################################################################################################
-from enums.sensor_names import SensorNames
-from enums.actuator_names import ActuatorNames
-from enums.pipe_type import PipeType
-from enums.tank_type import TankType
-from enum import Enum
+from app.service.db_service import DbService
+from app.enums.sensor_names import SensorNames
+from app.enums.actuator_names import ActuatorNames
+from app.enums.pipe_type import PipeType
+from app.enums.tank_type import TankType
 import time
 
 class Chaos_Agent:
