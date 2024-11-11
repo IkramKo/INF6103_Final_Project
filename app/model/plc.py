@@ -83,27 +83,23 @@ class PLC(Iot):
         If ANY sensor not at ideal value, open retreatment valve.
         If ideal values, open output valve.
         """
-        if not self._is_ideal(SensorNames.TREATED_TANK_TEMP) or \
-            not self._is_ideal(SensorNames.TREATED_TANK_CONDUCTIVITY) or \
-            not self._is_ideal(SensorNames.TREATED_TANK_DISSOLVED_OX) or \
-            not self._is_ideal(SensorNames.TREATED_TANK_TURBIDITY) or \
-            not self._is_ideal(SensorNames.TREATED_TANK_PH):
+        if self._is_ideal(SensorNames.TREATED_TANK_TEMP) and \
+            self._is_ideal(SensorNames.TREATED_TANK_CONDUCTIVITY) and \
+            self._is_ideal(SensorNames.TREATED_TANK_DISSOLVED_OX) and \
+            self._is_ideal(SensorNames.TREATED_TANK_TURBIDITY) and \
+            self._is_ideal(SensorNames.TREATED_TANK_PH):
             
-            retreatment_pump_debit = (self.curr_state[SensorNames.UNTREATED_TANK_LEVEL] - self.curr_state[SensorNames.UNTREATED_TANK_LEVEL])/self.simulation_time_loop_in_seconds
-            self._manage_pipe(PipeType.RETREATEMENT, retreatment_pump_debit, 1)
-        else:
             treated_output_pump_debit = self.curr_state[SensorNames.UNTREATED_TANK_LEVEL]/self.simulation_time_loop_in_seconds
             self._manage_pipe(PipeType.TREATED_OUTPUT, treated_output_pump_debit, 1)
+        else:
+            retreatment_pump_debit = (self.curr_state[SensorNames.UNTREATED_TANK_LEVEL] - self.curr_state[SensorNames.UNTREATED_TANK_LEVEL])/self.simulation_time_loop_in_seconds
+            self._manage_pipe(PipeType.RETREATEMENT, retreatment_pump_debit, 1)
 
     def _on_empty_treated_tank(self):
         if self.curr_state[SensorNames.TREATED_TANK_LEVEL] <= 0:
             self._manage_pipe(PipeType.RETREATEMENT, 0, 0)
             self._manage_pipe(PipeType.TREATED_OUTPUT, 0, 0)
 
-        
-
-        
-    
     def on_message(self, client, userdata, message):
         print(f"Received message: {message.payload.decode()} on topic {message.topic}")
         
@@ -111,15 +107,12 @@ class PLC(Iot):
         if message.topic in self.current_state:
             self.curr_state[message.topic] = message.payload.decode()
 
-            # 
-
-            # Deal the treated tank first cause it's the easiest
-            if self._is_ideal(SensorNames.TREATED_TANK_TEMP) and \
-                self._is_ideal(SensorNames.TREATED_TANK_CONDUCTIVITY) and \
-                self._is_ideal(SensorNames.TREATED_TANK_DISSOLVED_OX) and \
-                self._is_ideal(SensorNames.TREATED_TANK_TURBIDITY) and \
-                self._is_ideal(SensorNames.TREATED_TANK_PH):
-                pass
+            self._on_empty_untreated_tank()
+            self._on_filled_untreated_tank()
+            self._on_treated_water()
+            self._on_filled_treated_tank()
+            self._on_treated_tank_quality_check()
+            self._on_empty_treated_tank()
 
         else:
             print(f"Error! {message.topic} doesn't exist")
