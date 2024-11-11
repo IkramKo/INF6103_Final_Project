@@ -1,8 +1,9 @@
-from model.iot import Iot
+from app.model.iot import Iot
+import time
 
 class Sensor(Iot):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, broker_address: str= "localhost", port: int = 1883, db_host: str = "localhost"):
+        super().__init__(name, broker_address, port, db_host)
     
     def mqtt_publish(self):
         if self.client.is_connected():
@@ -20,7 +21,7 @@ class Sensor(Iot):
         # Keep the script running
         try:
             while True:
-                if not self.is_connected:
+                if not self.client.is_connected():
                     print("Waiting for connection...")
                     time.sleep(1)
                 else:

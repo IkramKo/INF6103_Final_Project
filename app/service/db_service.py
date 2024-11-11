@@ -5,19 +5,17 @@ from psycopg2 import sql
 
 class DbService:
     # Params used to connect to db
-    db_params = {
-        "host": "localhost",
-        "port": "5432",
-        "database": "mydb",
-        "user": "myuser",
-        "password": "mypassword"
-    }
-
-    def __init__(self):
+    def __init__(self, db_host: str = "localhost", db_port: str = "5432"):
         try:
+            self.db_params = {
+                "host": db_host,
+                "port": db_port,
+                "database": "mydb",
+                "user": "myuser",
+                "password": "mypassword"
+            }
             self._connection = psycopg2.connect(**self.db_params)
-            self._cursor = self._connection.cursor()
-            
+            self._cursor = self._connection.cursor()            
             # Establish and test connection to db
             self._cursor.execute("SELECT version();")
             db_version = self._cursor.fetchone()

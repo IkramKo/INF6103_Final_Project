@@ -2,8 +2,8 @@ from app.model.iot import Iot
 import time
 
 class Actuator(Iot):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, broker_address: str= "localhost", port: int = 1883, db_host: str = "localhost"):
+        super().__init__(name, broker_address, port, db_host, iot_type="actuator")
         self.is_connected = False
     
     def connect(self):
