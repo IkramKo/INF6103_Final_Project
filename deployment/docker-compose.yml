@@ -32,19 +32,33 @@ services:
       context: ../.
       dockerfile: deployment/Dockerfile
       args:
-        # IOT_PATH: app/plc.py
         IOT_PATH: app.plc
+        IOT_NAME: plc_usr
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
     depends_on:
-      - postgres
+      mosquitto:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
   p_debit_rtrm:
     build:
       context: ../.
       dockerfile: deployment/Dockerfile
       args:
-        # IOT_PATH: app/sensors/pipes/P_Debit_RTRTM.py
-        IOT_PATH: app.sensors.pipes.P_Debit_RTRTM
+        IOT_PATH: app.sensor
+        IOT_NAME: P_Debit_RTRTM
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
     depends_on:
-      - postgres
+      mosquitto:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
 
 networks:
   my_network:
