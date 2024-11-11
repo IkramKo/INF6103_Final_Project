@@ -4,8 +4,8 @@ from app.enums.actuator_names import ActuatorNames
 import time
 
 class PLC(Iot):
-    def __init__(self, name: str, password: str):
-        super().__init__(name)
+    def __init__(self, name: str, password: str, broker_address: str= "localhost", port: int = 1883, db_host: str = "localhost"):
+        super().__init__(name, broker_address, port, db_host)
         self.is_connected = False
         self.client.username_pw_set(username=self.name, password=password)
         self.curr_state = {}
@@ -88,7 +88,7 @@ class PLC(Iot):
         self.client.on_message = self.on_message
         self.client.connect(self.broker_address, self.port)
         self.client.loop_start()  # Start the network loop
-
+        print("hello world")
         # Keep the script running
         try:
             while True:
@@ -98,6 +98,3 @@ class PLC(Iot):
         except KeyboardInterrupt:
             client.loop_stop()
             client.disconnect()
-
-plc = PLC("plc_usr", "plc_passwd")
-plc.connect()
