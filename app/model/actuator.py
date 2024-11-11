@@ -19,8 +19,8 @@ class Actuator(Iot):
                     print("Waiting for connection...")
                     time.sleep(1)
         except KeyboardInterrupt:
-            client.loop_stop()
-            client.disconnect()
+            self.client.loop_stop()
+            self.client.disconnect()
 
     # Callback functions
     def on_connect(self, client, userdata, flags, rc, properties=None):
