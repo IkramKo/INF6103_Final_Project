@@ -137,17 +137,12 @@ class Chaos_Agent:
         self._init_tank_sensors_to_their_ideal_values(TankType.UNTREATED)
         sensor_target_vals = self._set_untreated_tank_sensor_data()
 
-        all_sensors_at_treated_ideal_val = True
         untreated_output_valve_status = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_VALVE.value)[0]
         untreated_intput_valve_status = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_INPUT_PIPE_VALVE.value)[0]
 
-        while all_sensors_at_treated_ideal_val and not (untreated_output_valve_status or untreated_intput_valve_status): #
-            # increment
+        while not (untreated_output_valve_status or untreated_intput_valve_status):
+            # increment; when ideal value reached, values will stop changing, and nothing will happen until one of the pipes opens.
             self._increment_untreated_tank_sensor_values(sensor_target_vals)
-
-            # check if all have reached id val
-            # all(flag == 0 for (_, _, flag) in items) -- thank you stackoverflow i owe you my life
-            all_sensors_at_treated_ideal_val = not all(curr_val >= id_val for curr_val, id_val, _ in sensor_target_vals.values())
             time.sleep(1)
 
             # Retrieve valve status again to stop as soon as either of them opens (treatment interrupted if so)

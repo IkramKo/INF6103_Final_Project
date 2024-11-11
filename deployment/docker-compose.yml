@@ -38,9 +38,9 @@ services:
         DB_HOST: postgres
     depends_on:
       mosquitto:
-        condition: service_healthy
+        condition: service_started
       postgres:
-        condition: service_healthy
+        condition: service_started
     networks:
       - my_network
   p_debit_rtrm:
@@ -54,9 +54,9 @@ services:
         DB_HOST: postgres
     depends_on:
       mosquitto:
-        condition: service_healthy
+        condition: service_started
       postgres:
-        condition: service_healthy
+        condition: service_started
     networks:
       - my_network
 
