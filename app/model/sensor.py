@@ -28,5 +28,5 @@ class Sensor(Iot):
                     self.mqtt_publish()
                     time.sleep(1)
         except KeyboardInterrupt:
-            client.loop_stop()
-            client.disconnect()
+            self.client.loop_stop()
+            self.client.disconnect()

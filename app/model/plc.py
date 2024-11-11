@@ -1,6 +1,8 @@
 from app.model.iot import Iot
 from app.enums.sensor_names import SensorNames
 from app.enums.actuator_names import ActuatorNames
+from app.enums.pipe_type import PipeType
+
 import time
 
 class PLC(Iot):
@@ -60,15 +62,12 @@ class PLC(Iot):
         if pipe_type == PipeType.UNTREATED_INPUT:
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value, valve_position)
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value, pump_debit)
-            # self.mqtt_publish(SensorNames.UNTREATED_TANK_INPUT_PIPE_DEBIT.value, pump_debit)
         elif pipe_type == PipeType.UNTREATED_OUTPUT:
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_VALVE.value, valve_position)
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_PUMP.value, pump_debit)
-            # self.mqtt_publish(SensorNames.UNTREATED_TANK_OUTPUT_PIPE_DEBIT.value, pump_debit)
         elif pipe_type == PipeType.RETREATEMENT:
             self.mqtt_publish(ActuatorNames.RETREATEMENT_PIPE_VALVE.value, valve_position)
             self.mqtt_publish(ActuatorNames.RETREATEMENT_PIPE_PUMP.value, pump_debit)
-            # self.mqtt_publish(SensorNames.RETREATEMENT_PIPE_DEBIT.value, pump_debit)
         elif pipe_type == PipeType.TREATED_OUTPUT:
             self.mqtt_publish(ActuatorNames.TREATED_TANK_OUTPUT_PIPE_VALVE.value, valve_position)
             self.mqtt_publish(ActuatorNames.TREATED_TANK_OUTPUT_PIPE_PUMP.value, pump_debit)
@@ -96,5 +95,5 @@ class PLC(Iot):
                     print("Waiting for connection...")
                     time.sleep(1)
         except KeyboardInterrupt:
-            client.loop_stop()
-            client.disconnect()
+            self.client.loop_stop()
+            self.client.disconnect()
