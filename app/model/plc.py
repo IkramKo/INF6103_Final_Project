@@ -13,7 +13,7 @@ class PLC(Iot):
         self.client.username_pw_set(username=self.name, password=password)
         self.curr_state = {}
         self.ideal_state = {}
-        ideal_values = self.db_service.command("SELECT sensor_name, ideal_value FROM INF6103.Sensor")
+        ideal_values = self.db_service.command("SELECT sensor_name, ideal_value FROM INF6103.Sensor UNION ALL SELECT actuator_name, NULL FROM INF6103.Actuator;")
         for ideal_value in ideal_values:
             self.curr_state[ideal_value[0]] = 0
             self.ideal_state[ideal_value[0]] = ideal_value[1]
@@ -39,9 +39,9 @@ class PLC(Iot):
         Check if untreated tank empty.
         Open untreated input valve.
         """
-        current_untreated_tank_level = self.curr_state[SensorNames.UNTREATED_TANK_LEVEL]
+        current_untreated_tank_level = self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]
         if current_untreated_tank_level <= 0:
-            untreated_tank_input_pump_debit = (self.ideal_state[SensorNames.UNTREATED_TANK_LEVEL] - current_untreated_tank_level)/self.simulation_time_loop_in_seconds
+            untreated_tank_input_pump_debit = (self.ideal_state[SensorNames.UNTREATED_TANK_LEVEL.value] - current_untreated_tank_level)/self.simulation_time_loop_in_seconds
             self._manage_pipe(PipeType.UNTREATED_INPUT, untreated_tank_input_pump_debit, 1)
     
     def _on_filled_untreated_tank(self):
@@ -50,7 +50,7 @@ class PLC(Iot):
         Close input pipe and retreatment pipe.
         """
         # Simulation automatically triggers water treatment when both pipes are closed.
-        if self._is_ideal(SensorNames.UNTREATED_TANK_LEVEL):
+        if self._is_ideal(SensorNames.UNTREATED_TANK_LEVEL.value):
             self._manage_pipe(PipeType.UNTREATED_INPUT, 0, 0)
             self._manage_pipe(PipeType.RETREATEMENT, 0, 0)
 
@@ -60,13 +60,13 @@ class PLC(Iot):
         Check if untreated tank sensors values reached the ideal value.
         Open untreated tank output valve.
         """
-        if self._is_ideal(SensorNames.UNTREATED_TANK_TEMP) and \
-            self._is_ideal(SensorNames.UNTREATED_TANK_CONDUCTIVITY) and \
-            self._is_ideal(SensorNames.UNTREATED_TANK_DISSOLVED_OX) and \
-            self._is_ideal(SensorNames.UNTREATED_TANK_TURBIDITY) and \
-            self._is_ideal(SensorNames.UNTREATED_TANK_PH):
+        if self._is_ideal(SensorNames.UNTREATED_TANK_TEMP.value) and \
+            self._is_ideal(SensorNames.UNTREATED_TANK_CONDUCTIVITY.value) and \
+            self._is_ideal(SensorNames.UNTREATED_TANK_DISSOLVED_OX.value) and \
+            self._is_ideal(SensorNames.UNTREATED_TANK_TURBIDITY.value) and \
+            self._is_ideal(SensorNames.UNTREATED_TANK_PH.value):
 
-            untreated_tank_output_pump_debit = (self.ideal_state[SensorNames.TREATED_TANK_LEVEL] - self.curr_state[SensorNames.TREATED_TANK_LEVEL])/self.simulation_time_loop_in_seconds
+            untreated_tank_output_pump_debit = (self.ideal_state[SensorNames.TREATED_TANK_LEVEL.value] - self.curr_state[SensorNames.TREATED_TANK_LEVEL.value])/self.simulation_time_loop_in_seconds
             self._manage_pipe(PipeType.UNTREATED_OUTPUT, untreated_tank_output_pump_debit, 1)
 
     def _on_filled_treated_tank(self):
@@ -74,7 +74,7 @@ class PLC(Iot):
         Stops filling treated tank.
         Close untreated output pipe.
         """
-        if self._is_ideal(SensorNames.TREATED_TANK_LEVEL):
+        if self._is_ideal(SensorNames.TREATED_TANK_LEVEL.value):
             self._manage_pipe(PipeType.UNTREATED_OUTPUT, 0, 0)
 
     def _on_treated_tank_quality_check(self):
@@ -83,20 +83,20 @@ class PLC(Iot):
         If ANY sensor not at ideal value, open retreatment valve.
         If ideal values, open output valve.
         """
-        if self._is_ideal(SensorNames.TREATED_TANK_TEMP) and \
-            self._is_ideal(SensorNames.TREATED_TANK_CONDUCTIVITY) and \
-            self._is_ideal(SensorNames.TREATED_TANK_DISSOLVED_OX) and \
-            self._is_ideal(SensorNames.TREATED_TANK_TURBIDITY) and \
-            self._is_ideal(SensorNames.TREATED_TANK_PH):
+        if self._is_ideal(SensorNames.TREATED_TANK_TEMP.value) and \
+            self._is_ideal(SensorNames.TREATED_TANK_CONDUCTIVITY.value) and \
+            self._is_ideal(SensorNames.TREATED_TANK_DISSOLVED_OX.value) and \
+            self._is_ideal(SensorNames.TREATED_TANK_TURBIDITY.value) and \
+            self._is_ideal(SensorNames.TREATED_TANK_PH.value):
             
-            treated_output_pump_debit = self.curr_state[SensorNames.UNTREATED_TANK_LEVEL]/self.simulation_time_loop_in_seconds
+            treated_output_pump_debit = self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]/self.simulation_time_loop_in_seconds
             self._manage_pipe(PipeType.TREATED_OUTPUT, treated_output_pump_debit, 1)
         else:
-            retreatment_pump_debit = (self.curr_state[SensorNames.UNTREATED_TANK_LEVEL] - self.curr_state[SensorNames.UNTREATED_TANK_LEVEL])/self.simulation_time_loop_in_seconds
+            retreatment_pump_debit = (self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value] - self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value])/self.simulation_time_loop_in_seconds
             self._manage_pipe(PipeType.RETREATEMENT, retreatment_pump_debit, 1)
 
     def _on_empty_treated_tank(self):
-        if self.curr_state[SensorNames.TREATED_TANK_LEVEL] <= 0:
+        if self.curr_state[SensorNames.TREATED_TANK_LEVEL.value] <= 0:
             self._manage_pipe(PipeType.RETREATEMENT, 0, 0)
             self._manage_pipe(PipeType.TREATED_OUTPUT, 0, 0)
 
