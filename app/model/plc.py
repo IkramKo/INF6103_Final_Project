@@ -104,7 +104,7 @@ class PLC(Iot):
         print(f"Received message: {message.payload.decode()} on topic {message.topic}")
         
         # The PLC will receive all the data from the sensors
-        if message.topic in self.current_state:
+        if message.topic in self.curr_state:
             self.curr_state[message.topic] = message.payload.decode()
 
             self._on_empty_untreated_tank()
