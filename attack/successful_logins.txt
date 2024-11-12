@@ -1,0 +1,16 @@
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Level_TRTM/yl206864
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Temperature_TRTM/yl206864
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Conductivity_TRTM/yl206864
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Dissolved_Oxygen_TRTM/yl206864
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Turbidity_TRTM/yl206864
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_PH_TRTM/yl206864
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Level_TRT/ykb965531398
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Temperature_TRT/ykb965531398
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Conductivity_TRT/ykb965531398
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Dissolved_Oxygen_TRT/ykb965531398
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_Turbidity_TRT/ykb965531398
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: T_PH_TRT/ykb965531398
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: P_Debit_TRTM_In/panenbap790319
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: P_Debit_TRTM_Out/panenbap790319
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: P_Debit_TRT_Out/panenbap790319
+[1m[32m[+][0m 172.25.0.2:1883       - MQTT Login Successful: P_Debit_RTRTM/panenbap790319
