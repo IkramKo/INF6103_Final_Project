@@ -16,7 +16,7 @@ COPY app /usr/src/app/app
 COPY ../requirements.txt .
 
 # Install dependencies
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 # Define the entry point for the container (using the copied main.py)
 CMD python3 -m $IOT_PATH_ENV --name $IOT_NAME_ENV --mqtt_host $MQTT_HOST_ENV --db_host $DB_HOST_ENV
