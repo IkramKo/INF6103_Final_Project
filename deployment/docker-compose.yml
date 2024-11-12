@@ -17,7 +17,6 @@ services:
       - "5432:5432"
     networks:
       - my_network
-
   mosquitto:
     image: eclipse-mosquitto:latest
     depends_on:
@@ -34,7 +33,38 @@ services:
     tty: true
     networks:
       - my_network
-  
+  otel-lgtm:
+    image: grafana/otel-lgtm
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - grafana_data:/data/grafana
+      - prometheus_data:/data/prometheus
+      - loki_data:/loki
+    environment:
+      - GF_PATHS_DATA=/data/grafana
+    restart: unless-stopped
+    networks:
+      - my_network
+  # Chaos Agent
+  chaos_agent:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.service.chaos_agent
+        IOT_NAME: chaos_agent
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
   # IOT Devices
   plc:
     build:
@@ -45,6 +75,30 @@ services:
         IOT_NAME: plc_usr
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "plc"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      otel-lgtm:
+        condition: service_started
+    networks:
+      - my_network
+  # Sensors (Untreated Tank)
+  t_level_trtm:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Level_TRTM
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
     depends_on:
       mosquitto:
         condition: service_started
@@ -52,8 +106,185 @@ services:
         condition: service_healthy
     networks:
       - my_network
-  #
-  p_debit_rtrm:
+  t_temperature_trtm:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Temperature_TRTM
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  t_conductivity_trtm:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Conductivity_TRTM
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  t_dissolved_oxygen_trtm:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Dissolved_Oxygen_TRTM
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  t_turbidity_trtm:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Turbidity_TRTM
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  t_ph_trtm:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_PH_TRTM
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  # Sensors (Treated Tank)
+  t_level_trt:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Level_TRT
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  t_temperature_trt:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Temperature_TRT
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  t_conductivity_trt:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Conductivity_TRT
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  t_dissolved_oxygen_trt:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Dissolved_Oxygen_TRT
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  t_turbidity_trt:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_Turbidity_TRT
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  t_ph_trt:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: T_PH_TRT
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  # Sensors (Pipes)
+  p_debit_rtrtm:
     build:
       context: ../.
       dockerfile: deployment/Dockerfile
@@ -69,7 +300,188 @@ services:
         condition: service_healthy
     networks:
       - my_network
-
+  p_debit_trt_out:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: P_Debit_TRT_Out
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  p_debit_trtm_out:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: P_Debit_TRTM_Out
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  p_debit_trtm_in:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.sensor
+        IOT_NAME: P_Debit_TRTM_In
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  # Actuators (Valves)
+  p_valve_trtm_in:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.actuator
+        IOT_NAME: P_Valve_TRTM_In
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  p_valve_trtm_out:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.actuator
+        IOT_NAME: P_Valve_TRTM_Out
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  p_valve_trt_out:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.actuator
+        IOT_NAME: P_Valve_TRT_Out
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  p_valve_rtrtm:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.actuator
+        IOT_NAME: P_Valve_RTRTM
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  # Actuators (Pumps)
+  p_pump_trtm_in:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.actuator
+        IOT_NAME: P_Pump_TRTM_In
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  p_pump_trtm_out:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.actuator
+        IOT_NAME: P_Pump_TRTM_Out
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  p_pump_trt_out:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.actuator
+        IOT_NAME: P_Pump_TRT_Out
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+  p_pump_rtrtm:
+    build:
+      context: ../.
+      dockerfile: deployment/Dockerfile
+      args:
+        IOT_PATH: app.actuator
+        IOT_NAME: P_Pump_RTRTM
+        MQTT_HOST: mosquitto
+        DB_HOST: postgres
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
 networks:
   my_network:
     driver: bridge
+volumes:
+  grafana_data:
+  prometheus_data:
+  loki_data:
