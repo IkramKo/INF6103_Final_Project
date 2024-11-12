@@ -16,7 +16,7 @@ class PLC(Iot):
         ideal_values = self.db_service.command("SELECT sensor_name, ideal_value FROM INF6103.Sensor UNION ALL SELECT actuator_name, NULL FROM INF6103.Actuator;")
         for ideal_value in ideal_values:
             self.curr_state[ideal_value[0]] = 0
-            self.ideal_state[ideal_value[0]] = ideal_value[1]
+            self.ideal_state[ideal_value[0]] = float(ideal_value[1]) if ideal_value[1] else None
         print(self.curr_state)
         print(self.ideal_state)
 
@@ -105,7 +105,7 @@ class PLC(Iot):
         
         # The PLC will receive all the data from the sensors
         if message.topic in self.curr_state:
-            self.curr_state[message.topic] = message.payload.decode()
+            self.curr_state[message.topic] = float(message.payload.decode())
 
             self._on_empty_untreated_tank()
             self._on_filled_untreated_tank()

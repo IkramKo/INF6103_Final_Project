@@ -26,14 +26,15 @@ from app.enums.actuator_names import ActuatorNames
 from app.enums.pipe_type import PipeType
 from app.enums.tank_type import TankType
 import time
+import argparse
 
-class Chaos_Agent:
+class ChaosAgent:
     """
     Class that simulated activity in the tanks but randomly varying the values read by the sensors.
     Modifies the database, from which sensors read values.
     """
-    def __init__(self):
-        self.db_service = DbService()
+    def __init__(self, db_host: str = "localhost"):
+        self.db_service = DbService(db_host=db_host)
         self.db_service.reset_all_current_values() # Reset simulation
         self.simulation_time_loop_in_seconds = 5
         self.untreated_tank_sensor_names = [
@@ -277,7 +278,16 @@ class Chaos_Agent:
 
         
 def main():
-    chaos_agent = Chaos_Agent()
+    parser = argparse.ArgumentParser(description='Your script description')
+    parser.add_argument('--db_host', help='Database host', required=False)
+    parser.add_argument('--mqtt_host', help='MQTT host', required=False)
+    parser.add_argument('--name', help='Name of the Chaos Agent', required=False)
+    args = parser.parse_args()
+
+    print(f"DB_HOST: {args.db_host}") #access using args.name
+    db_host=args.db_host if args.db_host else "localhost"
+
+    chaos_agent = ChaosAgent(db_host=db_host)
     chaos_agent.fill_untreated_tank_when_input_valve_active()
     chaos_agent.treat_water()
     chaos_agent.fill_treated_tank_when_untreated_output_valve_open()
