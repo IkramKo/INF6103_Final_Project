@@ -2,6 +2,7 @@ from app.model.iot import Iot
 from app.enums.sensor_names import SensorNames
 from app.enums.actuator_names import ActuatorNames
 from app.enums.pipe_type import PipeType
+from app.service.otel import Otel
 
 import time
 
@@ -19,6 +20,7 @@ class PLC(Iot):
             self.ideal_state[ideal_value[0]] = float(ideal_value[1]) if ideal_value[1] else None
         print(self.curr_state)
         print(self.ideal_state)
+        self.otel = Otel()
 
     # Callback functions
     def on_connect(self, client, userdata, flags, rc, properties=None):
