@@ -54,10 +54,15 @@ services:
       context: ../.
       dockerfile: deployment/Dockerfile
       args:
-        IOT_PATH: app.service.chaos_agent
+        IOT_PATH: app.agent
         IOT_NAME: chaos_agent
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "chaos_agent"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -358,6 +363,11 @@ services:
         IOT_NAME: P_Valve_TRTM_In
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "p_valve_trtm_in"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -374,6 +384,11 @@ services:
         IOT_NAME: P_Valve_TRTM_Out
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "p_valve_trtm_out"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -390,6 +405,11 @@ services:
         IOT_NAME: P_Valve_TRT_Out
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "p_valve_trt_out"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -406,6 +426,11 @@ services:
         IOT_NAME: P_Valve_RTRTM
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "p_valve_rtrtm"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -423,6 +448,11 @@ services:
         IOT_NAME: P_Pump_TRTM_In
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "p_pump_trtm_in"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -439,6 +469,11 @@ services:
         IOT_NAME: P_Pump_TRTM_Out
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "p_pump_trtm_out"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -455,6 +490,11 @@ services:
         IOT_NAME: P_Pump_TRT_Out
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "p_pump_trt_out"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -471,6 +511,11 @@ services:
         IOT_NAME: P_Pump_RTRTM
         MQTT_HOST: mosquitto
         DB_HOST: postgres
+    environment:
+      OTEL_SERVICE_NAME: "p_pump_rtrtm"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
+      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started

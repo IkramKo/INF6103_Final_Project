@@ -24,10 +24,9 @@ class Otel(metaclass=Singleton):
         logger_provider = LoggerProvider()
         set_logger_provider(logger_provider)
         exporter = OTLPLogExporter(
-            endpoint="http://otel-lgtm:4317",
             insecure=True
         )
+        logging.basicConfig(level=logging.DEBUG)  # Set to DEBUG to see detailed information
         logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
         handler = LoggingHandler(level=logging.NOTSET, logger_provider=logger_provider)
-        self.logger = logging.getLogger()
-        self.logger.addHandler(handler)
+        logging.getLogger().addHandler(handler)

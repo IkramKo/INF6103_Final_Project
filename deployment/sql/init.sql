@@ -1,7 +1,7 @@
 --SET search_path = INF6103; -- Was causing problems in online db playground so idk...
 
-DROP SCHEMA IF EXISTS INF6103 CASCADE;
-CREATE SCHEMA INF6103;
+DROP SCHEMA IF EXISTS INF6103 CASCADE;      
+CREATE SCHEMA IF NOT EXISTS INF6103;  -- In your init.sql or a separate schema creation script
 
 ------------------- Sensors -------------------
 CREATE TABLE IF NOT EXISTS INF6103.Sensor (

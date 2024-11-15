@@ -1,0 +1,12 @@
+version: "3.9" # Or later
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    user: "1000:1000"
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./config:/mosquitto/config
+      - ./data:/mosquitto/data
+      - ./log:/mosquitto/log # Or remove if not strictly needed.

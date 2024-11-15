@@ -3,7 +3,7 @@ from app.enums.sensor_names import SensorNames
 from app.enums.actuator_names import ActuatorNames
 from app.enums.pipe_type import PipeType
 from app.service.otel import Otel
-from app.meta.decorators.logging import log_method_calls
+from app.meta.decorators.logging import log_with_attributes
 
 import time
 
@@ -24,20 +24,19 @@ class PLC(Iot):
         self.sensor_histogram = self.meter.create_histogram(f"sensor.distribution")
         self.actuator_gauge = self.meter.create_gauge(f"actuator.value")
         self.actuator_histogram = self.meter.create_histogram(f"actuator.distribution")
-        self.logger = Otel().logger
 
     # Callback functions
     def on_connect(self, client, userdata, flags, rc, properties=None):
-        self.logger.info(f"on_connect - Connection result code: {rc}")
+        log_with_attributes(f"Connection result code: {rc}", level="info", rc=rc)  # Includes 
         if rc == 0:
-            self.logger.info("Connected to MQTT")
+            log_with_attributes("Connected to MQTT")
             client.subscribe(self.topic)
             iot_arr = self.db_service.command("SELECT sensor_name AS name FROM INF6103.Sensor UNION ALL SELECT actuator_name as name FROM INF6103.Actuator;")
             for iot in iot_arr:
                 self.client.subscribe(f"{iot[0]}")
-                self.logger.info(f"PLC is subscribed to: {iot[0]}")
+                log_with_attributes(f"PLC is subscribed to: {iot[0]}")
             self.is_connected = True
-            self.logger.info(f"self.is_connected = {self.is_connected}")
+            log_with_attributes(f"self.is_connected = {self.is_connected}")
         else:
             self.logger.error(f"Failed to connect, return code {rc}")
     
@@ -48,10 +47,9 @@ class PLC(Iot):
         Open untreated input valve.
         """
         current_untreated_tank_level = self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]
-        self.logger.info(f"_on_empty_untreated_tank - current_untreated_tank_level: {current_untreated_tank_level}")
         if current_untreated_tank_level <= 0:
             untreated_tank_input_pump_debit = (self.ideal_state[SensorNames.UNTREATED_TANK_LEVEL.value] - current_untreated_tank_level)/self.simulation_time_loop_in_seconds
-            self.logger.info(f"_on_empty_untreated_tank - untreated_tank_input_pump_debit [{self.ideal_state[SensorNames.UNTREATED_TANK_LEVEL.value]} - {current_untreated_tank_level} / {self.simulation_time_loop_in_seconds}]: {untreated_tank_input_pump_debit}")
+            log_with_attributes(f"_on_empty_untreated_tank - untreated_tank_input_pump_debit [{self.ideal_state[SensorNames.UNTREATED_TANK_LEVEL.value]} - {current_untreated_tank_level} / {self.simulation_time_loop_in_seconds}]: {untreated_tank_input_pump_debit}")
             self._manage_pipe(PipeType.UNTREATED_INPUT, untreated_tank_input_pump_debit, 1)
         return current_untreated_tank_level
     
@@ -62,7 +60,6 @@ class PLC(Iot):
         """
         # Simulation automatically triggers water treatment when both pipes are closed.
         is_ideal = self._is_ideal(SensorNames.UNTREATED_TANK_LEVEL.value)
-        self.logger.info(f"_on_filled_untreated_tank - {SensorNames.UNTREATED_TANK_LEVEL.value} is ideal: {is_ideal}")
         if is_ideal:
             self._manage_pipe(PipeType.UNTREATED_INPUT, 0, 0)
             self._manage_pipe(PipeType.RETREATEMENT, 0, 0)
@@ -80,10 +77,10 @@ class PLC(Iot):
             self._is_ideal(SensorNames.UNTREATED_TANK_TURBIDITY.value) and \
             self._is_ideal(SensorNames.UNTREATED_TANK_PH.value)
         
-        self.logger.info(f"_on_treated_water - {SensorNames.UNTREATED_TANK_TEMP.value}, {SensorNames.UNTREATED_TANK_CONDUCTIVITY.value}, {SensorNames.UNTREATED_TANK_DISSOLVED_OX.value},{SensorNames.UNTREATED_TANK_TURBIDITY.value}, {SensorNames.UNTREATED_TANK_PH.value} is ideal: {is_ideal}")
+        log_with_attributes(f"_on_treated_water - {SensorNames.UNTREATED_TANK_TEMP.value}, {SensorNames.UNTREATED_TANK_CONDUCTIVITY.value}, {SensorNames.UNTREATED_TANK_DISSOLVED_OX.value},{SensorNames.UNTREATED_TANK_TURBIDITY.value}, {SensorNames.UNTREATED_TANK_PH.value} is ideal: {is_ideal}")
         if is_ideal:
             untreated_tank_output_pump_debit = (self.ideal_state[SensorNames.TREATED_TANK_LEVEL.value] - self.curr_state[SensorNames.TREATED_TANK_LEVEL.value])/self.simulation_time_loop_in_seconds
-            self.logger.info(f"untreated_tank_output_pump_debit [{self.ideal_state[SensorNames.TREATED_TANK_LEVEL.value]} - {self.curr_state[SensorNames.TREATED_TANK_LEVEL.value]} / {self.simulation_time_loop_in_seconds}]: {untreated_tank_output_pump_debit}")
+            log_with_attributes(f"untreated_tank_output_pump_debit [{self.ideal_state[SensorNames.TREATED_TANK_LEVEL.value]} - {self.curr_state[SensorNames.TREATED_TANK_LEVEL.value]} / {self.simulation_time_loop_in_seconds}]: {untreated_tank_output_pump_debit}")
             self._manage_pipe(PipeType.UNTREATED_OUTPUT, untreated_tank_output_pump_debit, 1)
 
     def _on_filled_treated_tank(self):
@@ -92,7 +89,7 @@ class PLC(Iot):
         Close untreated output pipe.
         """
         is_ideal = self._is_ideal(SensorNames.TREATED_TANK_LEVEL.value)
-        self.logger.info(f"_on_filled_treated_tank - {SensorNames.TREATED_TANK_LEVEL.value} is ideal: {is_ideal}")
+        log_with_attributes(f"_on_filled_treated_tank - {SensorNames.TREATED_TANK_LEVEL.value} is ideal: {is_ideal}")
         if is_ideal:
             self._manage_pipe(PipeType.UNTREATED_OUTPUT, 0, 0)
 
@@ -107,25 +104,25 @@ class PLC(Iot):
             self._is_ideal(SensorNames.TREATED_TANK_DISSOLVED_OX.value) and \
             self._is_ideal(SensorNames.TREATED_TANK_TURBIDITY.value) and \
             self._is_ideal(SensorNames.TREATED_TANK_PH.value)
-        self.logger.info(
+        log_with_attributes(
             f"_on_treated_tank_quality_check - {SensorNames.TREATED_TANK_TEMP.value}, {SensorNames.TREATED_TANK_CONDUCTIVITY.value},{SensorNames.TREATED_TANK_DISSOLVED_OX.value},{SensorNames.TREATED_TANK_TURBIDITY.value},{SensorNames.TREATED_TANK_PH} is ideal: {is_ideal}")
         if is_ideal:
             treated_output_pump_debit = self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]/self.simulation_time_loop_in_seconds
-            self.logger.info(f"_on_treated_tank_quality_check - treated_output_pump_debit [{self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]} / {self.simulation_time_loop_in_seconds}] = {treated_output_pump_debit}")
+            log_with_attributes(f"_on_treated_tank_quality_check - treated_output_pump_debit [{self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]} / {self.simulation_time_loop_in_seconds}] = {treated_output_pump_debit}")
             self._manage_pipe(PipeType.TREATED_OUTPUT, treated_output_pump_debit, 1)
         else:
             retreatment_pump_debit = (self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value] - self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value])/self.simulation_time_loop_in_seconds
-            self.logger.info(f"_on_treated_tank_quality_check - retreatment_pump_debit [({self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]} - {self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]}) / {self.simulation_time_loop_in_seconds}] = {retreatment_pump_debit}")
+            log_with_attributes(f"_on_treated_tank_quality_check - retreatment_pump_debit [({self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]} - {self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]}) / {self.simulation_time_loop_in_seconds}] = {retreatment_pump_debit}")
             self._manage_pipe(PipeType.RETREATEMENT, retreatment_pump_debit, 1)
 
     def _on_empty_treated_tank(self):
-        self.logger.info(f"_on_empty_treated_tank - current_treated_tank_level: {self.curr_state[SensorNames.TREATED_TANK_LEVEL.value]}")
+        log_with_attributes(f"_on_empty_treated_tank - current_treated_tank_level: {self.curr_state[SensorNames.TREATED_TANK_LEVEL.value]}")
         if self.curr_state[SensorNames.TREATED_TANK_LEVEL.value] <= 0:
             self._manage_pipe(PipeType.RETREATEMENT, 0, 0)
             self._manage_pipe(PipeType.TREATED_OUTPUT, 0, 0)
 
     def on_message(self, client, userdata, message):
-        self.logger.info(f"Received message: {message.payload.decode()} on topic {message.topic}")
+        log_with_attributes(f"Received message: {message.payload.decode()} on topic {message.topic}")
         
         # The PLC will receive all the data from the sensors
         if message.topic in self.curr_state:
@@ -175,18 +172,18 @@ class PLC(Iot):
         return None, None  # String not found in either enum
 
     def _is_ideal(self, sensor: str):
-        self.logger.info(f"Checking if {sensor} is ideal")
+        log_with_attributes(f"Checking if {sensor} is ideal")
         return self._almost_equal(self.curr_state[sensor], self.ideal_state[sensor])
 
     def _almost_equal(self, first, second):
         is_almost_equal = abs(first - second) < 1
-        self.logger.info(f"Almost Equals for {first}, {second}: {is_almost_equal}")
+        log_with_attributes(f"Almost Equals for {first}, {second}: {is_almost_equal}")
         return is_almost_equal
 
     def _manage_pipe(self, pipe_type: str, pump_debit: float, valve_position: float):
-        self.logger.info(f"_manage_pipe - Received manage pipe request for {pipe_type}, pump_debit: {pump_debit}, valve_position: {valve_position}")
+        log_with_attributes(f"_manage_pipe - Received manage pipe request for {pipe_type}, pump_debit: {pump_debit}, valve_position: {valve_position}")
         if pipe_type == PipeType.UNTREATED_INPUT:
-            self.mqtt_publish(ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value, valve_position)
+            self.mqtt_publish(ActuatorNames.UNTREATED_TANK_INPUT_PIPE_VALVE.value, valve_position)
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value, pump_debit)
         elif pipe_type == PipeType.UNTREATED_OUTPUT:
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_VALVE.value, valve_position)
@@ -204,9 +201,9 @@ class PLC(Iot):
             result = self.client.publish(topic, message)
             status = result.rc
             if status == 0:
-                self.logger.info(f"Message `{message}` sent to topic `{self.topic}`")
+                log_with_attributes(f"Message `{message}` sent to topic `{topic}`")
             else:
-                self.logger.error(f"Failed to send message to topic `{self.topic} with message {message}`")
+                self.logger.error(f"Failed to send message to topic `{topic} with message {message}`")
 
     def connect(self):
         self.client.on_connect = self.on_connect
@@ -217,7 +214,7 @@ class PLC(Iot):
         try:
             while True:
                 if not self.is_connected:
-                    print("Waiting for connection...")
+                    log_with_attributes("Waiting for connection...", level="debug", is_connected=self.is_connected)
                     time.sleep(1)
         except KeyboardInterrupt:
             self.client.loop_stop()
