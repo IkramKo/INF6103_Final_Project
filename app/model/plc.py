@@ -10,7 +10,7 @@ import time
 class PLC(Iot):
     def __init__(self, name: str, password: str, broker_address: str= "localhost", port: int = 1883, db_host: str = "localhost"):
         super().__init__(name, broker_address, port, db_host)
-        self.simulation_time_loop_in_seconds = 5
+        self.simulation_time_loop_in_seconds = 1
         self.is_connected = False
         self.client.username_pw_set(username=self.name, password=password)
         self.curr_state = {}
@@ -61,7 +61,7 @@ class PLC(Iot):
         # Simulation automatically triggers water treatment when both pipes are closed.
         is_ideal = self._is_ideal(SensorNames.UNTREATED_TANK_LEVEL.value)
         log_with_attributes(f"_on_filled_untreated_tank - is_ideal: {is_ideal}")
-        if is_ideal:
+        if is_ideal or (self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value] >= self.ideal_state[SensorNames.UNTREATED_TANK_LEVEL.value]):
             self._manage_pipe(PipeType.UNTREATED_INPUT, 0, 0)
             self._manage_pipe(PipeType.RETREATEMENT, 0, 0)
         return is_ideal
@@ -108,8 +108,8 @@ class PLC(Iot):
         log_with_attributes(
             f"_on_treated_tank_quality_check - {SensorNames.TREATED_TANK_TEMP.value}, {SensorNames.TREATED_TANK_CONDUCTIVITY.value},{SensorNames.TREATED_TANK_DISSOLVED_OX.value},{SensorNames.TREATED_TANK_TURBIDITY.value},{SensorNames.TREATED_TANK_PH} is ideal: {is_ideal}")
         if is_ideal:
-            treated_output_pump_debit = self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]/self.simulation_time_loop_in_seconds
-            log_with_attributes(f"_on_treated_tank_quality_check - treated_output_pump_debit [{self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value]} / {self.simulation_time_loop_in_seconds}] = {treated_output_pump_debit}")
+            treated_output_pump_debit = self.curr_state[SensorNames.TREATED_TANK_LEVEL.value]/self.simulation_time_loop_in_seconds
+            log_with_attributes(f"_on_treated_tank_quality_check - treated_output_pump_debit [{self.curr_state[SensorNames.TREATED_TANK_LEVEL.value]} / {self.simulation_time_loop_in_seconds}] = {treated_output_pump_debit}")
             self._manage_pipe(PipeType.TREATED_OUTPUT, treated_output_pump_debit, 1)
         else:
             retreatment_pump_debit = (self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value] - self.curr_state[SensorNames.UNTREATED_TANK_LEVEL.value])/self.simulation_time_loop_in_seconds
@@ -178,7 +178,7 @@ class PLC(Iot):
         return self._almost_equal(self.curr_state[sensor], self.ideal_state[ideal_sensor])
 
     def _almost_equal(self, first, second):
-        is_almost_equal = abs(first - second) < 1
+        is_almost_equal = abs(first - second) < 2
         log_with_attributes(f"Almost Equals for {first}, {second}: {is_almost_equal}")
         return is_almost_equal
 

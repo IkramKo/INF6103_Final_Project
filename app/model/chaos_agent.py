@@ -36,7 +36,7 @@ class ChaosAgent:
     def __init__(self, db_host: str = "localhost"):
         self.db_service = DbService(db_host)
         self.db_service.reset_all_current_values() # Reset simulation
-        self.simulation_time_loop_in_seconds = 5
+        self.simulation_time_loop_in_seconds = 1
         self.untreated_tank_sensor_names = [
             SensorNames.UNTREATED_TANK_TEMP.value,
             SensorNames.UNTREATED_TANK_CONDUCTIVITY.value,
@@ -121,9 +121,9 @@ class ChaosAgent:
             # retrieves type (oxygen, turbidity, etc)
             #untreated_sensor_type = untreated_sensor_name.split('_')[-2]
             equivalent_treated_sensor = untreated_sensor_name.replace("TRTM", "TRT")
-
+            print(f"_set_untreated_tank_sensor_data - equivalent_treated_sensor: {equivalent_treated_sensor}")
             # too tired to do a proper try catch so instead, SensorNames(equivalent_treated_sensor) is done to make sure element exists, if not, error raised automatically
-            curr_val = self.db_service.get_single_sensor_attributes("current_reading", equivalent_treated_sensor)[0]
+            curr_val = self.db_service.get_single_sensor_attributes("current_reading", untreated_sensor_name)[0]
             id_val = self.db_service.get_single_sensor_attributes("ideal_value", equivalent_treated_sensor)[0]
             increase_rate = (id_val - curr_val)/self.simulation_time_loop_in_seconds
             sensor_target_vals[untreated_sensor_name] = (curr_val, id_val, increase_rate)
@@ -137,7 +137,7 @@ class ChaosAgent:
             log_with_attributes(f"_increment_untreated_tank_sensor_values - sensor_name: {sensor_name}: (curr_val: {curr_val}, id_val: {id_val}, increase_rate: {increase_rate})")
             print(f"_increment_untreated_tank_sensor_values - sensor_name: {sensor_name}: (curr_val: {curr_val}, id_val: {id_val}, increase_rate: {increase_rate})")
             # dont increment sensors that have already reached their ideal value
-            if curr_val < id_val:
+            if curr_val != id_val:
                 current_reading = round(curr_val + increase_rate, 2)
                 sensor_target_vals[sensor_name] = (current_reading, id_val, increase_rate)
                 log_with_attributes(f"_increment_untreated_tank_sensor_values - (curr_val < id_val) sensor_name: {sensor_name}: (current_reading: {current_reading}, id_val: {id_val}, increase_rate: {increase_rate})")
@@ -202,7 +202,7 @@ class ChaosAgent:
             # Get current tank levels and increase rate
             treated_tank_increase_rate = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_PUMP.value)[0]
             log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - treated_tank_increase_rate: {treated_tank_increase_rate}")
-            self.db_service.update_single_sensor_current_reading(treated_tank_increase_rate, SensorNames.UNTREATED_TANK_OUTPUT_PIPE_DEBIT)
+            self.db_service.update_single_sensor_current_reading(treated_tank_increase_rate, SensorNames.UNTREATED_TANK_OUTPUT_PIPE_DEBIT.value)
             current_treated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.TREATED_TANK_LEVEL.value)[0]
             current_untreated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
             log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - current_treated_tank_lvl: {current_treated_tank_lvl} | current_untreated_tank_lvl: {current_untreated_tank_lvl}")
