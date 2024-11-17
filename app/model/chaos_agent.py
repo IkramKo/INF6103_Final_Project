@@ -79,11 +79,7 @@ class ChaosAgent:
         current_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
 
         while untreated_input_valve_status and current_tank_lvl < 450:
-            print("================================================================================")
             print("untreated_input_valve_status: ", untreated_input_valve_status)
-            print("current_tank_lvl: ", current_tank_lvl)
-            print("condidition: ", untreated_input_valve_status or current_tank_lvl < 450)
-            print("================================================================================")
             # Get current tank level, calculate new one, then update it
             current_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
             current_tank_lvl = round(current_tank_lvl + increase_rate, 2)
@@ -198,12 +194,12 @@ class ChaosAgent:
         # print(f"fill_treated_tank_when_untreated_output_valve_open - current_untreated_tank_lvl: {current_untreated_tank_lvl}")
         # log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - current_untreated_tank_lvl: {current_untreated_tank_lvl}")
 
-
-        keep_filling_tank = untreated_output_valve_status or current_treated_tank_lvl < 450
+        current_untreated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
+        keep_filling_tank = untreated_output_valve_status and current_treated_tank_lvl < 450
         print(f"keep_filling_tank: {keep_filling_tank}")
         log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - untreated_output_valve_status or current_treated_tank_lvl < 450: {(keep_filling_tank)}")
         
-        while untreated_output_valve_status and current_treated_tank_lvl < 450:
+        while untreated_output_valve_status and current_untreated_tank_lvl > 0:
             # Get current tank levels
             current_untreated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
             current_treated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.TREATED_TANK_LEVEL.value)[0]
@@ -338,11 +334,6 @@ class ChaosAgent:
         log_with_attributes(f"empty_treated_tank - current_untreated_tank_lvl: {current_untreated_tank_lvl}")
 
         log_with_attributes("empty_treated_tank - Treated tank emptied into reservoir.")
-        self._reset_treated_tank_sensors()
-
-    def _reset_treated_tank_sensors(self):
-        for sensor in self.treated_tank_sensor_names:
-            self.db_service.update_single_sensor_current_reading(0, sensor)
 
 # def main():
 
