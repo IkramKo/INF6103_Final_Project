@@ -17,7 +17,7 @@ class Actuator(Iot):
         try:
             while True:
                 if not self.is_connected:
-                    print("Waiting for connection...")
+                    print("Waiting for connection...", self.name, self.passwd)
                     time.sleep(1)
         except KeyboardInterrupt:
             self.client.loop_stop()

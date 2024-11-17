@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # PostgreSQL credentials
-PGHOST="localhost"  # Change if needed, for Docker setup use the name of the service (e.g. postgres)
+# Docker compose service name for PostgreSQL
+POSTGRES_SERVICE="postgres"
 PGUSER="myuser"
 PGPASSWORD="mypassword"
 PGDATABASE="mydb"
@@ -13,7 +14,7 @@ MOSQUITTO_SERVICE="mosquitto"
 SQL_QUERY="SELECT sensor_name AS name, psswd FROM INF6103.Sensor UNION ALL SELECT actuator_name as name, psswd FROM INF6103.Actuator;"
 
 # Get the list of sensor_name and password pairs from PostgreSQL
-sensor_data=$(PGPASSWORD=$PGPASSWORD psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -t -A -F"," -c "$SQL_QUERY")
+sensor_data=$(sudo docker compose exec -T "$POSTGRES_SERVICE" psql -U "$PGUSER" -d "$PGDATABASE" -t -A -F"," -c "$SQL_QUERY")
 
 # Loop through the sensor data and add each to Mosquitto's password file
 echo "Adding users to Mosquitto..."

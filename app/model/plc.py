@@ -60,6 +60,7 @@ class PLC(Iot):
         """
         # Simulation automatically triggers water treatment when both pipes are closed.
         is_ideal = self._is_ideal(SensorNames.UNTREATED_TANK_LEVEL.value)
+        log_with_attributes(f"_on_filled_untreated_tank - is_ideal: {is_ideal}")
         if is_ideal:
             self._manage_pipe(PipeType.UNTREATED_INPUT, 0, 0)
             self._manage_pipe(PipeType.RETREATEMENT, 0, 0)
@@ -172,8 +173,9 @@ class PLC(Iot):
         return None, None  # String not found in either enum
 
     def _is_ideal(self, sensor: str):
-        log_with_attributes(f"Checking if {sensor} is ideal")
-        return self._almost_equal(self.curr_state[sensor], self.ideal_state[sensor])
+        ideal_sensor = sensor.replace("TRTM", "TRT")
+        log_with_attributes(f"Checking if {sensor} is ideal between: {self.curr_state[sensor]} and {self.ideal_state[ideal_sensor]}")
+        return self._almost_equal(self.curr_state[sensor], self.ideal_state[ideal_sensor])
 
     def _almost_equal(self, first, second):
         is_almost_equal = abs(first - second) < 1
@@ -181,19 +183,22 @@ class PLC(Iot):
         return is_almost_equal
 
     def _manage_pipe(self, pipe_type: str, pump_debit: float, valve_position: float):
-        log_with_attributes(f"_manage_pipe - Received manage pipe request for {pipe_type}, pump_debit: {pump_debit}, valve_position: {valve_position}")
-        if pipe_type == PipeType.UNTREATED_INPUT:
+        if pipe_type == PipeType.UNTREATED_INPUT and self.curr_state[ActuatorNames.UNTREATED_TANK_INPUT_PIPE_VALVE.value] is not valve_position:
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_INPUT_PIPE_VALVE.value, valve_position)
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value, pump_debit)
-        elif pipe_type == PipeType.UNTREATED_OUTPUT:
+            log_with_attributes(f"_manage_pipe - Received manage pipe request for {pipe_type}, pump_debit: {pump_debit}, valve_position: {valve_position}")
+        elif pipe_type == PipeType.UNTREATED_OUTPUT and self.curr_state[ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_VALVE.value] is not valve_position:
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_VALVE.value, valve_position)
             self.mqtt_publish(ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_PUMP.value, pump_debit)
-        elif pipe_type == PipeType.RETREATEMENT:
+            log_with_attributes(f"_manage_pipe - Received manage pipe request for {pipe_type}, pump_debit: {pump_debit}, valve_position: {valve_position}")
+        elif pipe_type == PipeType.RETREATEMENT and self.curr_state[ActuatorNames.RETREATEMENT_PIPE_VALVE.value] is not valve_position:
             self.mqtt_publish(ActuatorNames.RETREATEMENT_PIPE_VALVE.value, valve_position)
             self.mqtt_publish(ActuatorNames.RETREATEMENT_PIPE_PUMP.value, pump_debit)
-        elif pipe_type == PipeType.TREATED_OUTPUT:
+            log_with_attributes(f"_manage_pipe - Received manage pipe request for {pipe_type}, pump_debit: {pump_debit}, valve_position: {valve_position}")
+        elif pipe_type == PipeType.TREATED_OUTPUT and self.curr_state[ActuatorNames.TREATED_TANK_OUTPUT_PIPE_VALVE.value] is not valve_position:
             self.mqtt_publish(ActuatorNames.TREATED_TANK_OUTPUT_PIPE_VALVE.value, valve_position)
             self.mqtt_publish(ActuatorNames.TREATED_TANK_OUTPUT_PIPE_PUMP.value, pump_debit)
+            log_with_attributes(f"_manage_pipe - Received manage pipe request for {pipe_type}, pump_debit: {pump_debit}, valve_position: {valve_position}")
             # self.mqtt_publish(SensorNames.TREATED_TANK_OUTPUT_PIPE_DEBIT.value, pump_debit)
 
     def mqtt_publish(self, topic, message):
@@ -201,9 +206,9 @@ class PLC(Iot):
             result = self.client.publish(topic, message)
             status = result.rc
             if status == 0:
-                log_with_attributes(f"Message `{message}` sent to topic `{topic}`")
+                log_with_attributes(f"mqtt_publish - Message `{message}` sent to topic `{topic}`")
             else:
-                self.logger.error(f"Failed to send message to topic `{topic} with message {message}`")
+                self.logger.error(f"mqtt_publish - Failed to send message to topic `{topic} with message {message}`")
 
     def connect(self):
         self.client.on_connect = self.on_connect
