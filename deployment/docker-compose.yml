@@ -62,7 +62,7 @@ services:
       OTEL_SERVICE_NAME: "chaos_agent"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -84,7 +84,7 @@ services:
       OTEL_SERVICE_NAME: "plc"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -367,7 +367,7 @@ services:
       OTEL_SERVICE_NAME: "p_valve_trtm_in"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -388,7 +388,7 @@ services:
       OTEL_SERVICE_NAME: "p_valve_trtm_out"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -409,7 +409,7 @@ services:
       OTEL_SERVICE_NAME: "p_valve_trt_out"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -430,7 +430,7 @@ services:
       OTEL_SERVICE_NAME: "p_valve_rtrtm"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -452,7 +452,7 @@ services:
       OTEL_SERVICE_NAME: "p_pump_trtm_in"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -473,7 +473,7 @@ services:
       OTEL_SERVICE_NAME: "p_pump_trtm_out"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -494,7 +494,7 @@ services:
       OTEL_SERVICE_NAME: "p_pump_trt_out"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
@@ -515,7 +515,7 @@ services:
       OTEL_SERVICE_NAME: "p_pump_rtrtm"
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc  # Example: Using HTTP/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4317 # Example: Remote collector
-      OTEL_METRIC_EXPORT_INTERVAL: "5000"  # so we don't have to wait 60s for metrics
+      OTEL_METRIC_EXPORT_INTERVAL: "500"  # so we don't have to wait 60s for metrics
     depends_on:
       mosquitto:
         condition: service_started
