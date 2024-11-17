@@ -68,22 +68,29 @@ class ChaosAgent:
         # self.manage_pipe(PipeType.UNTREATED_INPUT, untreated_input_pump_debit, 1) # set to 1 for valve position to activate
         ##################
         print("I'm here: fill_untreated_tank_when_input_valve_active")
+
+        # First, check status of untreated input valve and pump, then update sensor accordingly
         untreated_input_valve_status = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_INPUT_PIPE_VALVE.value)[0]
-        print(untreated_input_valve_status)
+        increase_rate = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value)[0]
+        self.db_service.update_single_sensor_current_reading(increase_rate, SensorNames.UNTREATED_TANK_INPUT_PIPE_DEBIT.value)
         log_with_attributes(f"fill_untreated_tank_when_input_valve_active - untreated_input_valve_status: {untreated_input_valve_status}")
-        while untreated_input_valve_status: # once plc done, replace this with while actuator of input pipe valve open
-            # Get current level and increase rate
+
+        # Get current tank level
+        current_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
+
+        while untreated_input_valve_status and current_tank_lvl < 450:
+            print("================================================================================")
             print("untreated_input_valve_status: ", untreated_input_valve_status)
-            increase_rate = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value)[0]
-            log_with_attributes(f"fill_untreated_tank_when_input_valve_active - increase_rate: {increase_rate}")
-            print(f"fill_untreated_tank_when_input_valve_active - increase_rate: {increase_rate}")
-            self.db_service.update_single_actuator_current_value(increase_rate, ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value) # Update sensor according to actuator value
-            current_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading, ideal_value", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
-            log_with_attributes(f"fill_untreated_tank_when_input_valve_active - current_tank_lvl: {current_tank_lvl}")
+            print("current_tank_lvl: ", current_tank_lvl)
+            print("condidition: ", untreated_input_valve_status or current_tank_lvl < 450)
+            print("================================================================================")
+            # Get current tank level, calculate new one, then update it
+            current_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
             current_tank_lvl = round(current_tank_lvl + increase_rate, 2)
+            self.db_service.update_single_sensor_current_reading(current_tank_lvl, SensorNames.UNTREATED_TANK_LEVEL.value)
+            log_with_attributes(f"fill_untreated_tank_when_input_valve_active - current_tank_lvl: {current_tank_lvl}")
             print(f"fill_untreated_tank_when_input_valve_active - round(current_tank_lvl + increase_rate, 2): {current_tank_lvl}")
             log_with_attributes(f"fill_untreated_tank_when_input_valve_active - round(current_tank_lvl + increase_rate, 2): {current_tank_lvl}")
-            self.db_service.update_single_sensor_current_reading(current_tank_lvl, SensorNames.UNTREATED_TANK_LEVEL.value)
             # print("Current untreated tank lvl (filling up phase): ", current_tank_lvl, "ideal value", init_target_tank_lvl)
             time.sleep(1)
 
@@ -93,7 +100,11 @@ class ChaosAgent:
             
             # retrieve valve status again
             untreated_input_valve_status = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_INPUT_PIPE_VALVE.value)[0]
+            increase_rate = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_INPUT_PIPE_PUMP.value)[0]
+            self.db_service.update_single_sensor_current_reading(increase_rate, SensorNames.UNTREATED_TANK_INPUT_PIPE_DEBIT.value)
             log_with_attributes(f"fill_untreated_tank_when_input_valve_active - untreated_input_valve_status: {untreated_input_valve_status}")
+            log_with_attributes(f"fill_untreated_tank_when_input_valve_active - increase_rate: {increase_rate}")
+            print(f"fill_untreated_tank_when_input_valve_active - increase_rate: {increase_rate}")
             
         print("Untreated tank filled to target level. Beginning treatment.") # move these statements to plc during integration
     
@@ -173,51 +184,49 @@ class ChaosAgent:
         log_with_attributes("Water treated. Transfering to quality check tank.")
 
     def fill_treated_tank_when_untreated_output_valve_open(self): #trigger when untreated output valve open
-        """
-        Open untreated tank output pipe
-        Fill treated tank
-        Simultaneously empty untreated tank
-        once on empty and the other full, close pipe
-        """
-        # to move to plc #
-        # init_current_treated_tank_lvl, init_target_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading, ideal_value", SensorNames.TREATED_TANK_LEVEL.value)
-        # untreated_output_pump_debit = (init_target_tank_lvl - init_current_treated_tank_lvl)/self.simulation_time_loop_in_seconds
-        # self.manage_pipe(PipeType.UNTREATED_OUTPUT, untreated_output_pump_debit, 1) # set to 1 for valve position to activate
-        ##################
         print("I'm here: fill_treated_tank_when_untreated_output_valve_open")
-        # Get values of untreated sensors for first iteration of loop
+        # Get values of untreated output pipe
         untreated_output_valve_status = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_VALVE.value)[0]
-        current_untreated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
+        treated_tank_increase_rate = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_PUMP.value)[0]
+        self.db_service.update_single_sensor_current_reading(treated_tank_increase_rate, SensorNames.UNTREATED_TANK_OUTPUT_PIPE_DEBIT.value)
 
+        # Get current treated tank level
+        current_treated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.TREATED_TANK_LEVEL.value)[0]
         log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - untreated_output_valve_status: {untreated_output_valve_status}")
-        log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - current_untreated_tank_lvl: {current_untreated_tank_lvl}")
-
         print(f"fill_treated_tank_when_untreated_output_valve_open - untreated_output_valve_status: {untreated_output_valve_status}")
-        print(f"fill_treated_tank_when_untreated_output_valve_open - current_untreated_tank_lvl: {current_untreated_tank_lvl}")
 
-        is_fill = untreated_output_valve_status and current_untreated_tank_lvl > 0
-        print(f"is_fill: {is_fill}")
-        log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - untreated_output_valve_status and current_untreated_tank_lvl > 0: {is_fill}")
-        while is_fill:
-            # Get current tank levels and increase rate
-            treated_tank_increase_rate = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_PUMP.value)[0]
-            log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - treated_tank_increase_rate: {treated_tank_increase_rate}")
-            self.db_service.update_single_sensor_current_reading(treated_tank_increase_rate, SensorNames.UNTREATED_TANK_OUTPUT_PIPE_DEBIT.value)
-            current_treated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.TREATED_TANK_LEVEL.value)[0]
+        # print(f"fill_treated_tank_when_untreated_output_valve_open - current_untreated_tank_lvl: {current_untreated_tank_lvl}")
+        # log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - current_untreated_tank_lvl: {current_untreated_tank_lvl}")
+
+
+        keep_filling_tank = untreated_output_valve_status or current_treated_tank_lvl < 450
+        print(f"keep_filling_tank: {keep_filling_tank}")
+        log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - untreated_output_valve_status or current_treated_tank_lvl < 450: {(keep_filling_tank)}")
+        
+        while untreated_output_valve_status and current_treated_tank_lvl < 450:
+            # Get current tank levels
             current_untreated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.UNTREATED_TANK_LEVEL.value)[0]
+            current_treated_tank_lvl = self.db_service.get_single_sensor_attributes("current_reading", SensorNames.TREATED_TANK_LEVEL.value)[0]
             log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - current_treated_tank_lvl: {current_treated_tank_lvl} | current_untreated_tank_lvl: {current_untreated_tank_lvl}")
             
-            # Update current tank levels
+            # Update current treated tank levels
             current_treated_tank_lvl = round(current_treated_tank_lvl + treated_tank_increase_rate, 2)
-            current_untreated_tank_lvl = round(current_untreated_tank_lvl - treated_tank_increase_rate, 2) # empty untreated tank at same rate as treated is filling up
-            log_with_attributes(f"Current treated tank lvl (post treatment phase): {current_treated_tank_lvl} | Current untreated tank lvl (post treatment phase): {current_untreated_tank_lvl}")
-
             self.db_service.update_single_sensor_current_reading(current_treated_tank_lvl, SensorNames.TREATED_TANK_LEVEL.value)
+
+            # Update current untreated tank levels
+            current_untreated_tank_lvl = round(current_untreated_tank_lvl - treated_tank_increase_rate, 2) # empty untreated tank at same rate as treated is filling up
             self.db_service.update_single_sensor_current_reading(current_untreated_tank_lvl, SensorNames.UNTREATED_TANK_LEVEL.value)
+            log_with_attributes(f"Current treated tank lvl (post treatment phase): {current_treated_tank_lvl} | Current untreated tank lvl (post treatment phase): {current_untreated_tank_lvl}")
             
-            untreated_output_valve_status = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_VALVE.value)[0]
-            is_fill = untreated_output_valve_status and current_untreated_tank_lvl > 0
             time.sleep(1)
+
+            # Get valve status again            
+            untreated_output_valve_status = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_VALVE.value)[0]
+            treated_tank_increase_rate = self.db_service.get_single_actuator_attributes("current_value", ActuatorNames.UNTREATED_TANK_OUTPUT_PIPE_PUMP.value)[0]
+            self.db_service.update_single_sensor_current_reading(treated_tank_increase_rate, SensorNames.UNTREATED_TANK_OUTPUT_PIPE_DEBIT.value)
+            keep_filling_tank = untreated_output_valve_status or current_treated_tank_lvl < 450
+
+            log_with_attributes(f"fill_treated_tank_when_untreated_output_valve_open - treated_tank_increase_rate: {treated_tank_increase_rate}")
 
         log_with_attributes("Treated tank filled to target level. Beginning quality check.")
         self._init_tank_sensors_to_their_ideal_values(TankType.TREATED)
@@ -329,3 +338,23 @@ class ChaosAgent:
         log_with_attributes(f"empty_treated_tank - current_untreated_tank_lvl: {current_untreated_tank_lvl}")
 
         log_with_attributes("empty_treated_tank - Treated tank emptied into reservoir.")
+        self._reset_treated_tank_sensors()
+
+    def _reset_treated_tank_sensors(self):
+        for sensor in self.treated_tank_sensor_names:
+            self.db_service.update_single_sensor_current_reading(0, sensor)
+
+# def main():
+
+#     try:
+#         chaos_agent = ChaosAgent()
+#         while True:
+#             chaos_agent.fill_untreated_tank_when_input_valve_active()
+#             chaos_agent.treat_water()
+#             chaos_agent.fill_treated_tank_when_untreated_output_valve_open()
+#             chaos_agent.empty_treated_tank()
+#     except KeyboardInterrupt:
+#         print("Chaos Agent stopped")
+
+# if __name__ == "__main__":
+#     main()

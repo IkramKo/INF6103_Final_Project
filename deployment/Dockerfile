@@ -15,8 +15,10 @@ WORKDIR /usr/src/app
 COPY app /usr/src/app/app
 COPY ../requirements.txt .
 
+RUN pip install --upgrade pip
+
 # Install dependencies
-RUN pip3 install -r requirements.txt
+RUN pip3 install --default-timeout=1000 --no-cache-dir -r requirements.txt
 
 # Define the entry point for the container (using the copied main.py)
 CMD python3 -m $IOT_PATH_ENV --name $IOT_NAME_ENV --mqtt_host $MQTT_HOST_ENV --db_host $DB_HOST_ENV

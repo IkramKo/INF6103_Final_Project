@@ -1,5 +1,4 @@
 Deprecated==1.2.14
-diagrams==0.24.1
 googleapis-common-protos==1.65.0
 graphviz==0.20.3
 grpcio==1.67.1

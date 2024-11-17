@@ -10,7 +10,7 @@ import time
 class PLC(Iot):
     def __init__(self, name: str, password: str, broker_address: str= "localhost", port: int = 1883, db_host: str = "localhost"):
         super().__init__(name, broker_address, port, db_host)
-        self.simulation_time_loop_in_seconds = 1
+        self.simulation_time_loop_in_seconds = 10
         self.is_connected = False
         self.client.username_pw_set(username=self.name, password=password)
         self.curr_state = {}
